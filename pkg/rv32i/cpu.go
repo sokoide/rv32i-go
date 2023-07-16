@@ -9,7 +9,7 @@ import (
 
 type Cpu struct {
 	Regs    []uint32
-	PC      int
+	PC      uint32
 	Program *Program
 }
 
@@ -41,7 +41,12 @@ func (c *Cpu) Step() error {
 	log.Tracef("instr: %+v", instr)
 
 	// execute
-	c.Execute(instr)
+	incrementPC := c.Execute(instr)
+
+	// increment PC
+	if incrementPC {
+		c.PC += 4
+	}
 
 	return nil
 }
@@ -51,32 +56,45 @@ func (c *Cpu) DumpRegisters() {
 	for i := 0; i < len(c.Regs); i++ {
 		log.Infof("x%d = %d, 0x%08x", i, c.Regs[i], c.Regs[i])
 	}
-	log.Infof("pc = %d", c.PC)
+	log.Infof("pc = 0x%08x", c.PC)
 }
 
 func (c *Cpu) Fetch() (uint32, error) {
-	if c.PC >= len(*c.Program.Instructions) {
+	if c.PC/4 >= uint32(len(*c.Program.Instructions)) {
 		return 0, errors.New("PC overflow")
 	}
-	i := (*c.Program.Instructions)[c.PC]
-	c.PC++
+	i := (*c.Program.Instructions)[c.PC/4]
 
 	return i, nil
 }
 
-func (c *Cpu) Execute(i *Instruction) error {
+func (c *Cpu) Execute(i *Instruction) bool {
 	var op OpName
 	op = i.GetOpName()
+	incrementPC := true
 
 	switch op {
 	case OpLui:
 		c.Regs[i.Rd] = i.Imm
+	case OpAuipc:
+		c.Regs[i.Rd] = c.PC + i.Imm
 	case OpAddi:
 		c.Regs[i.Rd] = c.Regs[i.Rs1] + i.Imm
-
+	case OpAdd:
+		c.Regs[i.Rd] = c.Regs[i.Rs1] + c.Regs[i.Rs2]
+	case OpJal:
+		t := c.PC + 4
+		c.PC += i.Imm
+		c.Regs[i.Rd] = t
+		incrementPC = false
+	case OpJalr:
+		t := c.PC + 4
+		c.PC = (c.Regs[i.Rs1] + i.Imm)
+		c.Regs[i.Rd] = t
+		incrementPC = false
 	default:
 		// TODO: must implemente all operators
 		panic(fmt.Sprintf("Op: %s not supproted yet", op))
 	}
-	return nil
+	return incrementPC
 }
