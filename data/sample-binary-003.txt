@@ -1,0 +1,78 @@
+00000000 <boot>:
+       0: 93 00 00 00   li      ra, 0
+       4: 13 04 00 00   li      s0, 0
+       8: 37 45 00 00   lui     a0, 4
+
+0000000c <.Lpcrel_hi0>:
+       c: 17 11 00 00   auipc   sp, 1
+      10: 13 01 41 ff   addi    sp, sp, -12
+      14: 33 01 a1 00   add     sp, sp, a0
+      18: ef 00 80 04   jal     0x60 <riscv32_boot>
+      1c: 00 00 00 00   <unknown>
+
+00000020 <_out>:
+      20: 67 80 00 00   ret
+
+00000024 <is_even>:
+      24: 13 01 01 ff   addi    sp, sp, -16
+      28: 23 26 11 00   sw      ra, 12(sp)
+      2c: 23 24 81 00   sw      s0, 8(sp)
+      30: 13 04 01 01   addi    s0, sp, 16
+      34: 23 2a a4 fe   sw      a0, -12(s0)
+      38: 03 25 44 ff   lw      a0, -12(s0)
+      3c: 93 55 f5 01   srli    a1, a0, 31
+      40: b3 05 b5 00   add     a1, a0, a1
+      44: 93 f5 e5 ff   andi    a1, a1, -2
+      48: 33 05 b5 40   sub     a0, a0, a1
+      4c: 13 35 15 00   seqz    a0, a0
+      50: 83 20 c1 00   lw      ra, 12(sp)
+      54: 03 24 81 00   lw      s0, 8(sp)
+      58: 13 01 01 01   addi    sp, sp, 16
+      5c: 67 80 00 00   ret
+
+00000060 <riscv32_boot>:
+      60: 13 01 01 ff   addi    sp, sp, -16
+      64: 23 26 11 00   sw      ra, 12(sp)
+      68: 23 24 81 00   sw      s0, 8(sp)
+      6c: 13 04 01 01   addi    s0, sp, 16
+      70: 97 00 00 00   auipc   ra, 0
+      74: e7 80 80 01   jalr    24(ra)
+      78: 83 20 c1 00   lw      ra, 12(sp)
+      7c: 03 24 81 00   lw      s0, 8(sp)
+      80: 13 01 01 01   addi    sp, sp, 16
+      84: 67 80 00 00   ret
+
+00000088 <main>:
+      88: 13 01 01 fe   addi    sp, sp, -32
+      8c: 23 2e 11 00   sw      ra, 28(sp)
+      90: 23 2c 81 00   sw      s0, 24(sp)
+      94: 13 04 01 02   addi    s0, sp, 32
+      98: 13 05 a0 00   li      a0, 10
+      9c: 23 2a a4 fe   sw      a0, -12(s0)
+      a0: 13 05 10 00   li      a0, 1
+      a4: 23 28 a4 fe   sw      a0, -16(s0)
+      a8: 03 25 44 ff   lw      a0, -12(s0)
+      ac: 97 00 00 00   auipc   ra, 0
+      b0: e7 80 80 f7   jalr    -136(ra)
+      b4: a3 07 a4 fe   sb      a0, -17(s0)
+      b8: 03 25 04 ff   lw      a0, -16(s0)
+      bc: 97 00 00 00   auipc   ra, 0
+      c0: e7 80 80 f6   jalr    -152(ra)
+      c4: 23 07 a4 fe   sb      a0, -18(s0)
+      c8: 03 25 44 ff   lw      a0, -12(s0)
+      cc: 97 00 00 00   auipc   ra, 0
+      d0: e7 80 40 f5   jalr    -172(ra)
+      d4: 03 25 04 ff   lw      a0, -16(s0)
+      d8: 97 00 00 00   auipc   ra, 0
+      dc: e7 80 80 f4   jalr    -184(ra)
+      e0: 03 45 f4 fe   lbu     a0, -17(s0)
+      e4: 97 00 00 00   auipc   ra, 0
+      e8: e7 80 c0 f3   jalr    -196(ra)
+      ec: 03 45 e4 fe   lbu     a0, -18(s0)
+      f0: 97 00 00 00   auipc   ra, 0
+      f4: e7 80 00 f3   jalr    -208(ra)
+      f8: 13 05 00 00   li      a0, 0
+      fc: 83 20 c1 01   lw      ra, 28(sp)
+     100: 03 24 81 01   lw      s0, 24(sp)
+     104: 13 01 01 02   addi    sp, sp, 32
+     108: 67 80 00 00   ret
