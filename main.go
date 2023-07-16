@@ -14,11 +14,16 @@ func chkerr(err error) {
 }
 
 func main() {
+	var err error
+
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.TraceLevel)
 
 	log.Info("* Started")
-	// test binary
+
+	emu := rv32i.NewEmulator()
+
+	// test binary in sample-binary-001.txt
 	// 80000000 <boot>:
 	// 80000000: 93 00 00 00   li      ra, 0
 	// # x1 == ra == 0
@@ -26,21 +31,14 @@ func main() {
 	// # x8 == s0/fp == 0
 	// 80000008: 37 45 00 00   lui     a0, 4
 	// # x10 == a0 == 4<<12 == 16384
-	p, err := rv32i.ReadBinary("./data/sample-binary-001.txt")
+	err = emu.Load("./data/sample-binary-001.txt")
 	chkerr(err)
 
-	f := rv32i.NewFetcher(p)
-	d := rv32i.NewDecoder()
-
-	log.Infof("f: %+v", f)
-	log.Infof("d: %+v", d)
-
-	for i := 0; i < 3; i++ {
-		u32instr, _ := f.Fetch()
-		log.Infof("u32instr: %08x", u32instr)
-		instr := d.Decode(u32instr)
-		log.Infof("instr: %+v", instr)
-	}
+	emu.Reset()
+	emu.Step()
+	emu.Step()
+	emu.Step()
+	emu.Dump()
 
 	log.Info("* Completed")
 }

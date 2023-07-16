@@ -27,7 +27,7 @@ type Instruction struct {
 	Opcode uint8
 }
 
-func NewInstruction(instr uint32) Instruction {
+func NewInstruction(instr uint32) *Instruction {
 	opcode := uint8(instr & 0b1111111)
 	rd := uint8((instr >> 7) & 0b11111)
 	funct3 := uint8((instr >> 12) & 0b111)
@@ -84,7 +84,7 @@ func NewInstruction(instr uint32) Instruction {
 		imm = SignExtension(imm, 11)
 	}
 
-	return instance
+	return &instance
 }
 
 func (i *Instruction) GetInstructionType() InstructionType {

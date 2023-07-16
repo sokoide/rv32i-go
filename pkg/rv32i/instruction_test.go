@@ -47,7 +47,7 @@ func Test_NewInstruction(t *testing.T) {
 		{0x31766373, Instruction{Type: InstructionTypeC, Imm: 0, Funct7: 24, Rs2: 23, Rs1: 12, Funct3: 6, Rd: 6, Opcode: 0x31766373 & 0b1111111}},
 	} {
 		got := NewInstruction(td.Instr)
-		if got != td.Want {
+		if *got != td.Want {
 			t.Errorf("NewInstruction failed for 0x%x. got:%+v, want:%+v", td.Instr, got, td.Want)
 		}
 	}
