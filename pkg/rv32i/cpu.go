@@ -2,6 +2,7 @@ package rv32i
 
 import (
 	"errors"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -42,9 +43,6 @@ func (c *Cpu) Step() error {
 	// execute
 	c.Execute(instr)
 
-	// write back
-	c.WriteBack()
-
 	return nil
 }
 
@@ -66,12 +64,19 @@ func (c *Cpu) Fetch() (uint32, error) {
 	return i, nil
 }
 
-func (c *Cpu) Execute(instr *Instruction) error {
-	// TODO
-	return nil
-}
+func (c *Cpu) Execute(i *Instruction) error {
+	var op OpName
+	op = i.GetOpName()
 
-func (c *Cpu) WriteBack() error {
-	// TODO
+	switch op {
+	case OpLui:
+		c.Regs[i.Rd] = i.Imm
+	case OpAddi:
+		c.Regs[i.Rd] = c.Regs[i.Rs1] + i.Imm
+
+	default:
+		// TODO: must implemente all operators
+		panic(fmt.Sprintf("Op: %s not supproted yet", op))
+	}
 	return nil
 }
