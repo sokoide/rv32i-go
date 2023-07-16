@@ -62,17 +62,51 @@ func Test_Step2(t *testing.T) {
 	}
 }
 
-// func Test_Step3(t *testing.T) {
-// 	// sw, lw, srli, sub, ...
-// 	e := NewEmulator()
-// 	e.Load("../../data/sample-binary-003.txt")
-//
-// 	for i := 0; i < 10; i++ {
-// 		e.Step()
-// 	}
-//
-// 	want := uint32(0x00000060)
-// 	if e.Cpu.PC != want {
-// 		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
-// 	}
-// }
+func Test_Step3(t *testing.T) {
+	var want uint32
+	var wantu8 uint8
+
+	// sw, lw, srli, sub, ...
+	e := NewEmulator()
+	e.Load("../../data/sample-binary-003.txt")
+
+	for i := 0; i < 10; i++ {
+		e.Step()
+	}
+
+	// now at 0x0000006c
+	want = uint32(0x0000006c)
+	if e.Cpu.PC != want {
+		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
+	}
+
+	want = uint32(0x00004ff0)
+	if e.Cpu.X[2] != want {
+		t.Errorf("SP must be 0x%08x, but was 0x%08x", want, e.Cpu.X[2])
+	}
+
+	wantu8 = uint8(0x1c)
+	if e.Memory[0x4ffc] != wantu8 {
+		t.Errorf("0x4ffc must be 0x%02x, but was 0x%02x", wantu8, e.Memory[0x4ffc])
+	}
+
+	for i := 10; i < 13; i++ {
+		e.Step()
+	}
+
+	// now at main 0x00000088
+	want = uint32(0x00000088)
+	if e.Cpu.PC != want {
+		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
+	}
+
+	for i := 13; i < 24; i++ {
+		e.Step()
+	}
+
+	// now at is_even 0x00000024
+	want = uint32(0x00000024)
+	if e.Cpu.PC != want {
+		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
+	}
+}
