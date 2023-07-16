@@ -16,6 +16,7 @@ func Test_SignExtension(t *testing.T) {
 		{0x0000FFFF, 15, 0xFFFFFFFF},
 		{0b00001000, 8, 0b00001000},
 		{0b00001000, 3, 0b11111111_11111111_11111111_11111000},
+		{0b111111110100, 11, 0b11111111_11111111_11111111_11110100},
 	} {
 		got := SignExtension(td.Imm, td.Digit)
 		if got != td.Want {

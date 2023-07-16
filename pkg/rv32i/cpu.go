@@ -8,14 +8,14 @@ import (
 )
 
 type Cpu struct {
-	Regs    []uint32
-	PC      uint32
+	X       []uint32 // registers
+	PC      uint32   // program counter
 	Program *Program
 }
 
 func NewCpu(p *Program) *Cpu {
 	return &Cpu{
-		Regs:    make([]uint32, 32),
+		X:       make([]uint32, 32),
 		PC:      0,
 		Program: p,
 	}
@@ -53,8 +53,8 @@ func (c *Cpu) Step() error {
 
 func (c *Cpu) DumpRegisters() {
 	log.Info("* Registers")
-	for i := 0; i < len(c.Regs); i++ {
-		log.Infof("x%d = %d, 0x%08x", i, c.Regs[i], c.Regs[i])
+	for i := 0; i < len(c.X); i++ {
+		log.Infof("x%d = %d, 0x%08x", i, c.X[i], c.X[i])
 	}
 	log.Infof("pc = 0x%08x", c.PC)
 }
@@ -75,22 +75,29 @@ func (c *Cpu) Execute(i *Instruction) bool {
 
 	switch op {
 	case OpLui:
-		c.Regs[i.Rd] = i.Imm
+		c.X[i.Rd] = i.Imm
 	case OpAuipc:
-		c.Regs[i.Rd] = c.PC + i.Imm
+		c.X[i.Rd] = c.PC + i.Imm
 	case OpAddi:
-		c.Regs[i.Rd] = c.Regs[i.Rs1] + i.Imm
+		log.Tracef("addi: rs1:%x + imm:%x -> rd:%x", i.Rs1, i.Imm, i.Rd)
+		fmt.Printf("addi: rs1:%x + imm:%x -> rd:%x\n", i.Rs1, i.Imm, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] + i.Imm
 	case OpAdd:
-		c.Regs[i.Rd] = c.Regs[i.Rs1] + c.Regs[i.Rs2]
+		fmt.Printf("add: rs1:%x + rs2:%x -> rd:%x\n", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] + c.X[i.Rs2]
+	case OpSw:
+		addrTarget := c.X[i.Rs1] + i.Imm
+		data := c.X[i.Rs2]
+		log.Tracef("writing %x at %08x", data, addrTarget)
 	case OpJal:
 		t := c.PC + 4
 		c.PC += i.Imm
-		c.Regs[i.Rd] = t
+		c.X[i.Rd] = t
 		incrementPC = false
 	case OpJalr:
 		t := c.PC + 4
-		c.PC = (c.Regs[i.Rs1] + i.Imm)
-		c.Regs[i.Rd] = t
+		c.PC = (c.X[i.Rs1] + i.Imm)
+		c.X[i.Rd] = t
 		incrementPC = false
 	default:
 		// TODO: must implemente all operators

@@ -103,7 +103,6 @@ func NewInstruction(instr uint32) *Instruction {
 	switch instance.Type {
 	case InstructionTypeU:
 		imm = uint32(instr & 0b11111111_11111111_11110000_00000000)
-		instance.Imm = imm
 	case InstructionTypeJ:
 		if opcode == 0b1101111 {
 			// JAL
@@ -136,6 +135,7 @@ func NewInstruction(instr uint32) *Instruction {
 		imm = imm115<<5 | imm40
 		imm = SignExtension(imm, 11)
 	}
+	instance.Imm = imm
 
 	return &instance
 }
