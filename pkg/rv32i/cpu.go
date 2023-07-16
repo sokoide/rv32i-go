@@ -95,38 +95,72 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("jalr: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
 		incrementPC = false
 	case OpBeq:
-		panic("Not implemented yet")
+		log.Tracef("beq: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if c.X[i.Rs1] == c.X[i.Rs2] {
+			c.PC += i.Imm
+		}
 	case OpBne:
-		panic("Not implemented yet")
+		log.Tracef("bne: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if c.X[i.Rs1] != c.X[i.Rs2] {
+			c.PC += i.Imm
+		}
 	case OpBlt:
-		panic("Not implemented yet")
+		// signed comparison
+		a := int32(i.Rs1)
+		b := int32(i.Rs2)
+		log.Tracef("blt: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if a < b {
+			c.PC += i.Imm
+		}
 	case OpBge:
-		panic("Not implemented yet")
+		// signed comparison
+		a := int32(i.Rs1)
+		b := int32(i.Rs2)
+		log.Tracef("bge: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if a >= b {
+			c.PC += i.Imm
+		}
 	case OpBltu:
-		panic("Not implemented yet")
+		// unsigned comparison
+		log.Tracef("bltu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if c.X[i.Rs1] < c.X[i.Rs2] {
+			c.PC += i.Imm
+		}
 	case OpBgeu:
-		panic("Not implemented yet")
+		// unsigned comparison
+		log.Tracef("bgeu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		if c.X[i.Rs1] >= c.X[i.Rs2] {
+			c.PC += i.Imm
+		}
 	case OpLb:
+		// sing extension
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lb: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU8(addr))
-		c.X[i.Rd] &= 0xFFFFFF00
-		c.X[i.Rd] |= data
+		c.X[i.Rd] = SignExtension(data, 7)
 	case OpLh:
+		// sing extension
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lh: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU16(addr))
-		c.X[i.Rd] &= 0xFFFF0000
-		c.X[i.Rd] |= data
+		c.X[i.Rd] = SignExtension(data, 15)
 	case OpLw:
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lw: read %x -> X[%d]", addr, i.Rd)
 		data := c.Emu.ReadU32(addr)
 		c.X[i.Rd] = data
 	case OpLbu:
-		panic("Not implemented yet")
+		// zero extension
+		addr := c.X[i.Rs1] + i.Imm
+		log.Tracef("lbu: read %x -> X[%d]", addr, i.Rd)
+		data := uint32(c.Emu.ReadU8(addr))
+		c.X[i.Rd] = data
 	case OpLhu:
-		panic("Not implemented yet")
+		// zero extension
+		addr := c.X[i.Rs1] + i.Imm
+		log.Tracef("lhu: read %x -> X[%d]", addr, i.Rd)
+		data := uint32(c.Emu.ReadU16(addr))
+		c.X[i.Rd] = data
 	case OpSb:
 		addr := c.X[i.Rs1] + i.Imm
 		data := uint8(c.X[i.Rs2] & 0xFF)
@@ -165,7 +199,8 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("add: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
 		c.X[i.Rd] = c.X[i.Rs1] + c.X[i.Rs2]
 	case OpSub:
-		panic("Not implemented yet")
+		log.Tracef("sub: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] - c.X[i.Rs2]
 	case OpSll:
 		panic("Not implemented yet")
 	case OpSlt:
