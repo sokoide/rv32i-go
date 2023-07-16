@@ -67,6 +67,7 @@ func (c *Cpu) Fetch() (uint32, error) {
 }
 
 func (c *Cpu) Execute(instr *Instruction) error {
+	// TODO
 	return nil
 }
 

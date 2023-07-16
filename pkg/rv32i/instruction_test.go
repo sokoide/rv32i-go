@@ -52,3 +52,35 @@ func Test_NewInstruction(t *testing.T) {
 		}
 	}
 }
+
+func Test_GetOpName(t *testing.T) {
+	type TestData struct {
+		Instr uint32
+		Want  OpName
+	}
+
+	for _, td := range []TestData{
+		// 80000088: 13 01 01 fe   addi    sp, sp, -32
+		{0xfe010113, OpAddi},
+		// 8000008c: 23 2e 11 00   sw      ra, 28(sp)
+		{0x00112e23, OpSw},
+		// 800000b0: e7 80 80 f7   jalr    -136(ra)
+		{0xf78080e7, OpJalr},
+		// 80000010: ef 00 00 05  ▸jal▸0x80000060 <riscv32_boot>
+		{0x050000ef, OpJal},
+		// 80000084: 67 80 00 00   ret
+		//  ret -> jalr zero, ra, 0
+		{0x00008067, OpJalr},
+		//       28: 63 00 00 00   beqz    zero, 0x28 <.Lline_table_start0+0x28>
+		{0x00000063, OpBeq},
+		// 800000ac: 97 00 00 00   auipc   ra, 0
+		{0x00000097, OpAuipc},
+		//       3c: 73 63 76 31   csrrsi  t1, 791, 12
+		{0x31766373, OpCsrrsi},
+	} {
+		got := NewInstruction(td.Instr).GetOpName()
+		if got != td.Want {
+			t.Errorf("GetOpName failed for 0x%x. got:%+v, want:%+v", td.Instr, got, td.Want)
+		}
+	}
+}

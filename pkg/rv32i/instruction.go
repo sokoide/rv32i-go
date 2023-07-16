@@ -16,6 +16,59 @@ const (
 	InstructionTypeC
 )
 
+//go:generate stringer -type OpName
+type OpName int
+
+const (
+	OpLui OpName = iota
+	OpAuipc
+	OpJal
+	OpJalr
+	OpBeq
+	OpBne
+	OpBlt
+	OpBge
+	OpBltu
+	OpBgeu
+	OpLb
+	OpLh
+	OpLw
+	OpLbu
+	OpLhu
+	OpSb
+	OpSh
+	OpSw
+	OpAddi
+	OpSlti
+	OpSltiu
+	OpXori
+	OpOri
+	OpAndi
+	OpSlli
+	OpSrli
+	OpSrai
+	OpAdd
+	OpSub
+	OpSll
+	OpSlt
+	OpSltu
+	OpXor
+	OpSrl
+	OpSra
+	OpOr
+	OpAnd
+	OpFence
+	OpFenceI
+	OpEcall
+	OpEbreak
+	OpCsrrw
+	OpCsrrs
+	OpCsrrc
+	OpCsrrwi
+	OpCsrrsi
+	OpCsrrci
+)
+
 type Instruction struct {
 	Type   InstructionType
 	Imm    uint32
@@ -112,5 +165,189 @@ func (i *Instruction) GetInstructionType() InstructionType {
 		return InstructionTypeC
 	default:
 		panic(fmt.Sprintf("Opcode 0x%07b ot Supported", i.Opcode))
+	}
+}
+
+func (i *Instruction) GetOpName() OpName {
+	switch i.Type {
+	case InstructionTypeU:
+		switch i.Opcode {
+		case 0b0110111:
+			return OpLui
+		case 0b0010111:
+			return OpAuipc
+		default:
+			panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
+		}
+	case InstructionTypeJ:
+		switch i.Opcode {
+		case 0b1101111:
+			return OpJal
+		case 0b1100111:
+			return OpJalr
+		default:
+			panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
+		}
+	case InstructionTypeB:
+		switch i.Funct3 {
+		case 0b000:
+			return OpBeq
+		case 0b001:
+			return OpBne
+		case 0b100:
+			return OpBlt
+		case 0b101:
+			return OpBge
+		case 0b110:
+			return OpBltu
+		case 0b111:
+			return OpBgeu
+		default:
+			panic(fmt.Sprintf("Funct3: %03b is invalid for %v", i.Funct3, i.Type))
+		}
+	case InstructionTypeI:
+		switch i.Opcode {
+		case 0b00000011:
+			// L*
+			switch i.Funct3 {
+			case 0b000:
+				return OpLb
+			case 0b001:
+				return OpLh
+			case 0b010:
+				return OpLw
+			case 0b100:
+				return OpLbu
+			case 0b101:
+				return OpLhu
+			default:
+				panic(fmt.Sprintf("Opcode: %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct3, i.Type))
+			}
+		case 0b0010011:
+			// ADDI, SLTI, ...
+			switch i.Funct3 {
+			case 0b000:
+				return OpAddi
+			case 0b010:
+				return OpSlti
+			case 0b011:
+				return OpSltiu
+			case 0b100:
+				return OpXori
+			case 0b110:
+				return OpOri
+			case 0b111:
+				return OpAndi
+			default:
+				panic(fmt.Sprintf("Opcode: %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct3, i.Type))
+			}
+		default:
+			panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
+		}
+	case InstructionTypeS:
+		switch i.Funct3 {
+		case 0b000:
+			return OpSb
+		case 0b001:
+			return OpSh
+		case 0b010:
+			return OpSw
+		default:
+			panic(fmt.Sprintf("Funct3: %03b is invalid for %v", i.Funct3, i.Type))
+		}
+	case InstructionTypeR:
+		switch i.Opcode {
+		case 0b0010011:
+			switch i.Funct3 {
+			case 0b001:
+				return OpSlli
+			case 0b101:
+				switch i.Funct7 {
+				case 0b00000000:
+					return OpSrli
+				case 0b01000000:
+					return OpSrli
+				default:
+					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+				}
+			default:
+				panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+			}
+		case 0b0110011:
+			switch i.Funct3 {
+			case 0b000:
+				switch i.Funct7 {
+				case 0b00000000:
+					return OpAdd
+				case 0b01000000:
+					return OpSub
+				default:
+					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+				}
+			case 0b001:
+				return OpSll
+			case 0b010:
+				return OpSlt
+			case 0b011:
+				return OpSltu
+			case 0b100:
+				return OpXor
+			case 0b101:
+				switch i.Funct7 {
+				case 0b00000000:
+					return OpSrl
+				case 0b01000000:
+					return OpSra
+				default:
+					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+				}
+			case 0b110:
+				return OpOr
+			case 0b111:
+				return OpAnd
+			default:
+				panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+			}
+		default:
+			panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
+		}
+	case InstructionTypeF:
+		switch i.Funct3 {
+		case 0b000:
+			return OpFence
+		case 0b001:
+			return OpFenceI
+		default:
+			panic(fmt.Sprintf("Opcode: %07b,  Funct3: %03b is invalid for %v", i.Opcode, i.Funct3, i.Type))
+		}
+	case InstructionTypeC:
+		switch i.Funct3 {
+		case 0b000:
+			switch i.Rs2 {
+			case 0:
+				return OpEcall
+			case 1:
+				return OpEbreak
+			default:
+				panic(fmt.Sprintf("Opcode: %07b,  Rs2: %b, Funct3: %03b is invalid for %v", i.Opcode, i.Rs2, i.Funct3, i.Type))
+			}
+
+		case 0b001:
+			return OpCsrrw
+		case 0b010:
+			return OpCsrrs
+		case 0b011:
+			return OpCsrrc
+		case 0b101:
+			return OpCsrrwi
+		case 0b110:
+			return OpCsrrsi
+		case 0b111:
+			return OpCsrrci
+		default:
+			panic(fmt.Sprintf("Opcode: %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct3, i.Type))
+		}
+	default:
+		panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
 	}
 }
