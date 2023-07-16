@@ -66,6 +66,22 @@ func NewInstruction(instr uint32) Instruction {
 			imm = SignExtension(imm, 11)
 		}
 		instance.Imm = imm
+	case InstructionTypeB:
+		imm12 := instr >> 31
+		imm1015 := instr >> 25 & 0b111111
+		imm41 := instr >> 8 & 0b1111
+		imm11 := instr >> 7 & 0b1
+		imm = imm12<<12 | imm1015<<10 | imm41<<1 | imm11<<11
+		imm = SignExtension(imm, 12)
+	case InstructionTypeI:
+		imm110 := instr >> 20
+		imm = imm110
+		imm = SignExtension(imm, 11)
+	case InstructionTypeS:
+		imm115 := instr >> 25
+		imm40 := instr >> 7 & 0b11111
+		imm = imm115<<5 | imm40
+		imm = SignExtension(imm, 11)
 	}
 
 	return instance
