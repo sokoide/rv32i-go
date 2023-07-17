@@ -21,15 +21,29 @@ func NewEmulator() *Emulator {
 
 func (e *Emulator) Reset() {
 	e.Cpu.Reset()
+	e.Memory = make([]uint8, MaxMemory)
 }
 
 func (e *Emulator) Load(filePath string) error {
 	loader := NewLoader()
-	return loader.LoadAt(filePath, e.Memory, MaxMemory)
+	return loader.LoadAt(filePath, &e.Memory, MaxMemory)
 }
 
 func (e *Emulator) Step() error {
 	return e.Cpu.Step()
+}
+
+func (e *Emulator) Run() error {
+	var err error
+
+	for {
+		err = e.Cpu.Step()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (e *Emulator) StepUntil(PC uint32) error {

@@ -17,12 +17,14 @@ func main() {
 	var err error
 
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.TraceLevel)
+	// log.SetLevel(log.TraceLevel)
+	log.SetLevel(log.InfoLevel)
 
 	log.Info("* Started")
 	log.Info("* Running a small program")
 
 	emu := rv32i.NewEmulator()
+	emu.Reset()
 
 	// test binary in sample-binary-001.txt
 	// 80000000 <boot>:
@@ -35,7 +37,6 @@ func main() {
 	err = emu.Load("./data/sample-binary-001.txt")
 	chkerr(err)
 
-	emu.Reset()
 	emu.Step()
 	emu.Step()
 	emu.Step()
@@ -44,6 +45,15 @@ func main() {
 	log.Info("* Converting txt to bin")
 	l := rv32i.NewLoader()
 	l.TextToBinary("./data/sample-binary-003.txt", "./data/sample-binary-003.bin")
+
+	log.Info("* Running the bin")
+	emu.Reset()
+	err = emu.Load("./data/sample-binary-003.bin")
+	chkerr(err)
+
+	// emu.Run()
+	emu.StepUntil(0x1c)
+	emu.Dump()
 
 	log.Info("* Completed")
 }

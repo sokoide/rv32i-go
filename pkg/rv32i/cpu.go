@@ -37,6 +37,7 @@ func NewCpu() *Cpu {
 }
 
 func (c *Cpu) Reset() {
+	c.X = make([]uint32, 32)
 	c.PC = 0
 }
 
@@ -49,7 +50,7 @@ func (c *Cpu) Step() error {
 	if err != nil {
 		return err
 	}
-	log.Tracef("u32instr: %08x", u32instr)
+	log.Tracef("PC: 0x%08x, u32instr: %08x", c.PC, u32instr)
 
 	// decode
 	instr := NewInstruction(u32instr)

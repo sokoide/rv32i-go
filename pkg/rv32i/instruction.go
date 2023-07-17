@@ -164,7 +164,7 @@ func (i *Instruction) GetInstructionType() InstructionType {
 	case 0b1110011:
 		return InstructionTypeC
 	default:
-		panic(fmt.Sprintf("Opcode 0x%07b ot Supported", i.Opcode))
+		panic(fmt.Sprintf("Opcode 0x%07b not Supported", i.Opcode))
 	}
 }
 

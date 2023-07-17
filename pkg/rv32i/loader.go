@@ -15,22 +15,27 @@ func NewLoader() *Loader {
 	return &Loader{}
 }
 
-func (l *Loader) LoadAt(filePath string, loadAddr []uint8, maxSize uint32) error {
+func (l *Loader) LoadAt(filePath string, loadAddr *[]uint8, maxSize uint32) error {
 	var err error
-	var mem *[]uint32
 	ext := filepath.Ext(filePath)
 
 	if ext == ".txt" {
+		var mem *[]uint32
 		mem, err = l.ReadText(filePath)
+		if err != nil {
+			return nil
+		}
+		for idx, u32 := range *mem {
+			(*loadAddr)[idx*4] = uint8(u32 & 0x000000FF)
+			(*loadAddr)[idx*4+1] = uint8((u32 & 0x0000FF00) >> 8)
+			(*loadAddr)[idx*4+2] = uint8((u32 & 0x00FF0000) >> 16)
+			(*loadAddr)[idx*4+3] = uint8((u32 & 0xFF000000) >> 24)
+		}
 	} else {
-		mem, err = l.ReadBinary(filePath)
-	}
-
-	for idx, u32 := range *mem {
-		loadAddr[idx*4] = uint8(u32 & 0x000000FF)
-		loadAddr[idx*4+1] = uint8((u32 & 0x0000FF00) >> 8)
-		loadAddr[idx*4+2] = uint8((u32 & 0x00FF0000) >> 16)
-		loadAddr[idx*4+3] = uint8((u32 & 0xFF000000) >> 24)
+		err = l.ReadBinary(filePath, loadAddr)
+		if err != nil {
+			return nil
+		}
 	}
 
 	return err
@@ -106,15 +111,17 @@ func (l *Loader) ReadText(path string) (*[]uint32, error) {
 	return &ba, nil
 }
 
-func (l *Loader) ReadBinary(path string) (*[]uint32, error) {
-	var ba []uint32
+func (l *Loader) ReadBinary(path string, ba *[]byte) error {
+	var err error
+	var tmp []byte
 
-	fp, err := os.Open(path)
+	tmp, err = os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	for idx, b := range tmp {
+		(*ba)[idx] = b
 	}
 
-	defer fp.Close()
-
-	return &ba, nil
+	return nil
 }
