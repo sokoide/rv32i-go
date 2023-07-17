@@ -23,18 +23,16 @@ import (
 // x28–31 	t3–6 	Temporaries 						Caller
 
 type Cpu struct {
-	X       []uint32 // registers
-	PC      uint32   // program counter
-	Program *Program
-	Emu     *Emulator
+	X   []uint32 // registers
+	PC  uint32   // program counter
+	Emu *Emulator
 }
 
-func NewCpu(p *Program) *Cpu {
+func NewCpu() *Cpu {
 	return &Cpu{
-		X:       make([]uint32, 32),
-		PC:      0,
-		Program: p,
-		Emu:     nil,
+		X:   make([]uint32, 32),
+		PC:  0,
+		Emu: nil,
 	}
 }
 
@@ -77,10 +75,10 @@ func (c *Cpu) DumpRegisters() {
 }
 
 func (c *Cpu) Fetch() (uint32, error) {
-	if c.PC/4 >= uint32(len(*c.Program.Instructions)) {
+	if c.PC > MaxMemory {
 		return 0, errors.New("PC overflow")
 	}
-	i := (*c.Program.Instructions)[c.PC/4]
+	i := c.Emu.ReadU32(c.PC)
 
 	return i, nil
 }

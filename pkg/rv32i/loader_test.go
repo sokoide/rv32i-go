@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 
-func Test_ReadBinary(t *testing.T) {
-	prog := NewProgram()
-	p, err := prog.ReadBinary("../../data/sample-binary-001.txt")
+func Test_ReadText(t *testing.T) {
+	prog := NewLoader()
+	p, err := prog.ReadText("../../data/sample-binary-001.txt")
 	if err != nil {
 		t.Error(err)
 	}

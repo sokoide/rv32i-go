@@ -1,19 +1,18 @@
 package rv32i
 
+const MaxMemory = uint32(0x10_000)
+
 type Emulator struct {
-	Cpu     *Cpu
-	Memory  []uint8
-	Program *Program
+	Cpu    *Cpu
+	Memory []uint8
 }
 
 func NewEmulator() *Emulator {
-	program := NewProgram()
-	cpu := NewCpu(program)
+	cpu := NewCpu()
 
 	emu := Emulator{
-		Cpu:     cpu,
-		Program: program,
-		Memory:  make([]uint8, 0x10_000),
+		Cpu:    cpu,
+		Memory: make([]uint8, MaxMemory),
 	}
 	cpu.Emu = &emu
 
@@ -25,7 +24,8 @@ func (e *Emulator) Reset() {
 }
 
 func (e *Emulator) Load(filePath string) error {
-	return e.Program.Load(filePath)
+	loader := NewLoader()
+	return loader.LoadAt(filePath, e.Memory, MaxMemory)
 }
 
 func (e *Emulator) Step() error {
