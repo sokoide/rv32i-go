@@ -32,6 +32,21 @@ func (e *Emulator) Step() error {
 	return e.Cpu.Step()
 }
 
+func (e *Emulator) StepUntil(PC uint32) error {
+	var err error
+	for {
+		if e.Cpu.PC == PC {
+			break
+		}
+		err = e.Cpu.Step()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (e *Emulator) Dump() {
 	e.Cpu.DumpRegisters()
 }
@@ -63,14 +78,14 @@ func (e *Emulator) ReadU8(addr uint32) uint8 {
 
 func (e *Emulator) ReadU16(addr uint32) uint16 {
 	var data uint16
-	data = uint16(e.Memory[addr]) | uint16(e.Memory[addr+1]<<8)
+	data = uint16(e.Memory[addr]) | uint16(e.Memory[addr+1])<<8
 
 	return data
 }
 
 func (e *Emulator) ReadU32(addr uint32) uint32 {
 	var data uint32
-	data = uint32(e.Memory[addr]) | uint32(e.Memory[addr+1]<<8) | uint32(e.Memory[addr+2]<<14) | uint32(e.Memory[addr+3]<<24)
+	data = uint32(e.Memory[addr]) | uint32(e.Memory[addr+1])<<8 | uint32(e.Memory[addr+2])<<16 | uint32(e.Memory[addr+3])<<24
 
 	return data
 }

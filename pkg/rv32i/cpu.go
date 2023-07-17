@@ -7,6 +7,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Register ABIName Description 						Saver
+// -----------------------------------------------------------
+// x0 		zero 	Hard-wired zero 					—
+// x1 		ra 		Return address 						Caller
+// x2 		sp 		Stack pointer 						Callee
+// x3 		gp 		Global pointer 						—
+// x4 		tp 		Thread pointer 						—
+// x5–7 	t0–2 	Temporaries 						Caller
+// x8 		s0/fp 	Saved register/frame pointer 		Callee
+// x9 		s1 		Saved register 						Callee
+// x10–11 	a0–1 	Function arguments/return values 	Caller
+// x12–17 	a2–7 	Function arguments 					Caller
+// x18–27 	s2–11 	Saved registers 					Callee
+// x28–31 	t3–6 	Temporaries 						Caller
+
 type Cpu struct {
 	X       []uint32 // registers
 	PC      uint32   // program counter
@@ -133,18 +148,19 @@ func (c *Cpu) Execute(i *Instruction) bool {
 			c.PC += i.Imm
 		}
 	case OpLb:
-		// sing extension
+		// sign extension
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lb: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU8(addr))
 		c.X[i.Rd] = SignExtension(data, 7)
 	case OpLh:
-		// sing extension
+		// sign extension
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lh: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU16(addr))
 		c.X[i.Rd] = SignExtension(data, 15)
 	case OpLw:
+		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		log.Tracef("lw: read %x -> X[%d]", addr, i.Rd)
 		data := c.Emu.ReadU32(addr)
@@ -162,16 +178,19 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		data := uint32(c.Emu.ReadU16(addr))
 		c.X[i.Rd] = data
 	case OpSb:
+		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := uint8(c.X[i.Rs2] & 0xFF)
 		log.Tracef("sb: write %x at %x", data, addr)
 		c.Emu.WriteU8(addr, data)
 	case OpSh:
+		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := uint16(c.X[i.Rs2] & 0xFFFF)
 		log.Tracef("sh: write %x at %x", data, addr)
 		c.Emu.WriteU16(addr, data)
 	case OpSw:
+		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := c.X[i.Rs2]
 		log.Tracef("sw: write %x at %x", data, addr)
@@ -180,21 +199,43 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("addi: rs1:%x + imm:%x -> rd:%x", i.Rs1, i.Imm, i.Rd)
 		c.X[i.Rd] = c.X[i.Rs1] + i.Imm
 	case OpSlti:
-		panic("Not implemented yet")
+		// signed comparison
+		log.Tracef("slti: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		if int32(c.X[i.Rs1]) < int32(i.Imm) {
+			c.X[i.Rd] = 1
+		} else {
+			c.X[i.Rd] = 0
+		}
 	case OpSltiu:
-		panic("Not implemented yet")
+		// unsigned comparison
+		log.Tracef("sltiu: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		if c.X[i.Rs1] < i.Imm {
+			c.X[i.Rd] = 1
+		} else {
+			c.X[i.Rd] = 0
+		}
 	case OpXori:
-		panic("Not implemented yet")
+		log.Tracef("xori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] ^ i.Imm
 	case OpOri:
-		panic("Not implemented yet")
+		log.Tracef("ori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] | i.Imm
 	case OpAndi:
-		panic("Not implemented yet")
+		log.Tracef("andi: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] & i.Imm
 	case OpSlli:
-		panic("Not implemented yet")
+		// logical shift
+		log.Tracef("slli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] << i.Rs2
 	case OpSrli:
-		panic("Not implemented yet")
+		// logical shift
+		log.Tracef("srli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] >> i.Rs2
 	case OpSrai:
-		panic("Not implemented yet")
+		// arithmetic shift
+		log.Tracef("srai: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		data := c.X[i.Rs1] >> i.Rs2
+		c.X[i.Rd] = SignExtension(data, 31-int(i.Rs2))
 	case OpAdd:
 		log.Tracef("add: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
 		c.X[i.Rd] = c.X[i.Rs1] + c.X[i.Rs2]
@@ -202,41 +243,63 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("sub: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
 		c.X[i.Rd] = c.X[i.Rs1] - c.X[i.Rs2]
 	case OpSll:
-		panic("Not implemented yet")
+		// logical shift
+		log.Tracef("sll: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] << c.X[i.Rs1]
 	case OpSlt:
-		panic("Not implemented yet")
+		// signed comparison
+		log.Tracef("slt: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		if int32(c.X[i.Rs1]) < int32(c.X[i.Rs2]) {
+			c.X[i.Rd] = 1
+		} else {
+			c.X[i.Rd] = 0
+		}
 	case OpSltu:
-		panic("Not implemented yet")
+		// unsigned comparison
+		log.Tracef("sltu: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		if c.X[i.Rs1] < c.X[i.Rs2] {
+			c.X[i.Rd] = 1
+		} else {
+			c.X[i.Rd] = 0
+		}
 	case OpXor:
-		panic("Not implemented yet")
+		log.Tracef("xor: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] ^ c.X[i.Rs2]
 	case OpSrl:
-		panic("Not implemented yet")
+		// logical shift
+		log.Tracef("srl: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] >> c.X[i.Rs2]
 	case OpSra:
-		panic("Not implemented yet")
+		// arithmetic shift
+		log.Tracef("sra: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		data := c.X[i.Rs1] >> c.X[i.Rs2]
+		c.X[i.Rd] = SignExtension(data, 31-int(c.X[i.Rs2]))
 	case OpOr:
-		panic("Not implemented yet")
+		log.Tracef("or: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] | c.X[i.Rs2]
 	case OpAnd:
-		panic("Not implemented yet")
+		log.Tracef("and: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		c.X[i.Rd] = c.X[i.Rs1] & c.X[i.Rs2]
 	case OpFence:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpFenceI:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpEcall:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpEbreak:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrw:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrs:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrc:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrwi:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrsi:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	case OpCsrrci:
-		panic("Not implemented yet")
+		log.Warnf("Op %v is not implemented yet. rs1:%x, rs2:%x, rd:%x, imm:%x", op, i.Rs1, i.Rs2, i.Rd, i.Imm)
 	default:
 		panic(fmt.Sprintf("Op: %s invalid", op))
 	}

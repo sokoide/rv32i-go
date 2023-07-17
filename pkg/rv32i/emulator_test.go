@@ -64,49 +64,77 @@ func Test_Step2(t *testing.T) {
 
 func Test_Step3(t *testing.T) {
 	var want uint32
+	var got uint32
 	var wantu8 uint8
+	var gotu8 uint8
 
 	// sw, lw, srli, sub, ...
 	e := NewEmulator()
 	e.Load("../../data/sample-binary-003.txt")
 
-	for i := 0; i < 10; i++ {
-		e.Step()
-	}
-
-	// now at 0x0000006c
-	want = uint32(0x0000006c)
-	if e.Cpu.PC != want {
-		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
-	}
-
+	e.StepUntil(0x70)
+	// now at 0x00000070
+	got = e.Cpu.X[2]
 	want = uint32(0x00004ff0)
-	if e.Cpu.X[2] != want {
-		t.Errorf("SP must be 0x%08x, but was 0x%08x", want, e.Cpu.X[2])
+	if got != want {
+		t.Errorf("SP must be 0x%08x, but was 0x%08x", want, got)
 	}
 
+	// 5c: 13 01 01 ff  ▸addi▸   sp, sp, -16 -> sp == 0x4ff0
+	// 60: 23 26 11 00  ▸sw▸ ra, 12(sp) -> stored ra at 0x4ffc
+	// 'ra' must be the return address of the callee (<boot>)
+	// which is 0x1c (next IP of 18: ef 00 40 04  ▸jal▸0x5c <riscv32_boot>
 	wantu8 = uint8(0x1c)
-	if e.Memory[0x4ffc] != wantu8 {
-		t.Errorf("0x4ffc must be 0x%02x, but was 0x%02x", wantu8, e.Memory[0x4ffc])
+	gotu8 = e.Memory[0x4ffc]
+	if gotu8 != wantu8 {
+		t.Errorf("0x4ffc must be 0x%02x, but was 0x%02x", wantu8, gotu8)
 	}
 
-	for i := 10; i < 13; i++ {
-		e.Step()
+	e.StepUntil(0x24)
+	// a0 (1st argument to is_even
+	got = e.Cpu.X[10]
+	want = uint32(0x0000000a)
+	if got != want {
+		t.Errorf("a0 must be 0x%08x, was 0x%08x", want, got)
 	}
 
-	// now at main 0x00000088
-	want = uint32(0x00000088)
-	if e.Cpu.PC != want {
-		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
+	e.StepUntil(0x3c)
+	// now at is_even 0x0000003c
+	got = e.Cpu.X[11]
+	want = uint32(0x00000000)
+	if got != want {
+		t.Errorf("a1 must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
 	}
 
-	for i := 13; i < 24; i++ {
-		e.Step()
+	e.StepUntil(0x58)
+	e.Step()
+	// 'ret' must return to the main function at 0xb0
+	got = e.Cpu.PC
+	want = uint32(0x000000b0)
+	if got != want {
+		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, got)
+	}
+	// a0 == is_even(10) must be 1
+	got = e.Cpu.X[10]
+	want = uint32(0x0000001)
+	if got != want {
+		t.Errorf("a0 must be 0x%08x, but was 0x%08x", want, got)
 	}
 
-	// now at is_even 0x00000024
-	want = uint32(0x00000024)
-	if e.Cpu.PC != want {
-		t.Errorf("PC must be 0x%08x, but was 0x%08x", want, e.Cpu.PC)
+	e.StepUntil(0xb4)
+	got = e.Cpu.X[10]
+	want = uint32(0x0000001)
+	if got != want {
+		t.Errorf("a0 must be 0x%08x, but was 0x%08x", want, got)
 	}
+
+	e.StepUntil(0xc0)
+	// a0 == is_even(1) must be 0
+	got = e.Cpu.X[10]
+	want = uint32(0x0000000)
+	if got != want {
+		t.Errorf("a0 must be 0x%08x, but was 0x%08x", want, got)
+	}
+
+	e.StepUntil(0x104)
 }

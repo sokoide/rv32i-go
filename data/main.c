@@ -5,7 +5,10 @@ char is_even(int a) { return a % 2 == 0; }
 int main();
 
 void riscv32_boot() {
-    // TODO: need to clear bss, setup timer/UART or etc
+    // Note:
+    // This is only for the simulator.
+    // Need to clear bss, setup timer/UART or etc
+    // on a real hardware.
     main();
 }
 

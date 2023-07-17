@@ -263,9 +263,9 @@ func (i *Instruction) GetOpName() OpName {
 				return OpSlli
 			case 0b101:
 				switch i.Funct7 {
-				case 0b00000000:
+				case 0b0000000:
 					return OpSrli
-				case 0b01000000:
+				case 0b0100000:
 					return OpSrli
 				default:
 					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
@@ -277,9 +277,9 @@ func (i *Instruction) GetOpName() OpName {
 			switch i.Funct3 {
 			case 0b000:
 				switch i.Funct7 {
-				case 0b00000000:
+				case 0b0000000:
 					return OpAdd
-				case 0b01000000:
+				case 0b0100000:
 					return OpSub
 				default:
 					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
@@ -294,9 +294,9 @@ func (i *Instruction) GetOpName() OpName {
 				return OpXor
 			case 0b101:
 				switch i.Funct7 {
-				case 0b00000000:
+				case 0b0000000:
 					return OpSrl
-				case 0b01000000:
+				case 0b0100000:
 					return OpSra
 				default:
 					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
