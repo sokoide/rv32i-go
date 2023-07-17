@@ -20,6 +20,7 @@ func main() {
 	log.SetLevel(log.TraceLevel)
 
 	log.Info("* Started")
+	log.Info("* Running a small program")
 
 	emu := rv32i.NewEmulator()
 
@@ -39,6 +40,10 @@ func main() {
 	emu.Step()
 	emu.Step()
 	emu.Dump()
+
+	log.Info("* Converting txt to bin")
+	l := rv32i.NewLoader()
+	l.TextToBinary("./data/sample-binary-003.txt", "./data/sample-binary-003.bin")
 
 	log.Info("* Completed")
 }
