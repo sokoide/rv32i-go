@@ -29,6 +29,11 @@ func (e *Emulator) Load(filePath string) error {
 	return loader.LoadAt(filePath, &e.Memory, MaxMemory)
 }
 
+func (e *Emulator) LoadString(data string) error {
+	loader := NewLoader()
+	return loader.LoadStringAt(data, &e.Memory, MaxMemory)
+}
+
 func (e *Emulator) Step() error {
 	return e.Cpu.Step()
 }

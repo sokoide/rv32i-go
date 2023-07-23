@@ -104,7 +104,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		incrementPC = false
 	case OpJalr:
 		t := c.PC + 4
-		c.PC = (c.X[i.Rs1] + i.Imm)
+		c.PC = (c.X[i.Rs1] + i.Imm) & 0xffffffe
 		c.X[i.Rd] = t
 		log.Tracef("jalr: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
 		incrementPC = false

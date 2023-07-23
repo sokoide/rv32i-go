@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Loader struct {
@@ -20,17 +21,14 @@ func (l *Loader) LoadAt(filePath string, loadAddr *[]uint8, maxSize uint32) erro
 	ext := filepath.Ext(filePath)
 
 	if ext == ".txt" {
-		var mem *[]uint32
-		mem, err = l.ReadText(filePath)
+		fp, err := os.Open(filePath)
 		if err != nil {
-			return nil
+			return err
 		}
-		for idx, u32 := range *mem {
-			(*loadAddr)[idx*4] = uint8(u32 & 0x000000FF)
-			(*loadAddr)[idx*4+1] = uint8((u32 & 0x0000FF00) >> 8)
-			(*loadAddr)[idx*4+2] = uint8((u32 & 0x00FF0000) >> 16)
-			(*loadAddr)[idx*4+3] = uint8((u32 & 0xFF000000) >> 24)
-		}
+		defer fp.Close()
+
+		reader := bufio.NewReaderSize(fp, 1024)
+		err = l.readInto(reader, loadAddr, maxSize)
 	} else {
 		err = l.ReadBinary(filePath, loadAddr)
 		if err != nil {
@@ -41,12 +39,41 @@ func (l *Loader) LoadAt(filePath string, loadAddr *[]uint8, maxSize uint32) erro
 	return err
 }
 
+func (l *Loader) LoadStringAt(data string, loadAddr *[]uint8, maxSize uint32) error {
+	reader := bufio.NewReader(strings.NewReader(data))
+	return l.readInto(reader, loadAddr, maxSize)
+}
+
+func (l *Loader) readInto(reader *bufio.Reader, loadAddr *[]uint8, maxSize uint32) error {
+	var err error
+	var mem *[]uint32
+
+	mem, err = l.ReadText(reader)
+	if err != nil {
+		return nil
+	}
+	for idx, u32 := range *mem {
+		(*loadAddr)[idx*4] = uint8(u32 & 0x000000FF)
+		(*loadAddr)[idx*4+1] = uint8((u32 & 0x0000FF00) >> 8)
+		(*loadAddr)[idx*4+2] = uint8((u32 & 0x00FF0000) >> 16)
+		(*loadAddr)[idx*4+3] = uint8((u32 & 0xFF000000) >> 24)
+	}
+
+	return err
+}
+
 func (l *Loader) TextToBinary(pathIn string, pathOut string) error {
 	var err error
 	var p *[]uint32
 	var fp *os.File
 
-	p, err = l.ReadText(pathIn)
+	fp, err = os.Open(pathIn)
+	if err != nil {
+		return err
+	}
+	defer fp.Close()
+
+	p, err = l.ReadText(bufio.NewReaderSize(fp, 1024))
 
 	if err != nil {
 		return nil
@@ -69,16 +96,9 @@ func (l *Loader) TextToBinary(pathIn string, pathOut string) error {
 	return nil
 }
 
-func (l *Loader) ReadText(path string) (*[]uint32, error) {
+func (l *Loader) ReadText(reader *bufio.Reader) (*[]uint32, error) {
 	var ba []uint32
 
-	fp, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-
-	reader := bufio.NewReaderSize(fp, 1024)
 	for {
 		line, isPrefix, err := reader.ReadLine()
 		if err == io.EOF {
