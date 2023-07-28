@@ -1,12 +1,11 @@
-TARGET=rv32i-go
-SRCS=$(shell find . -type f -name '*.go') go.mod go.sum
+SRCS=$(shell find . -type f -name './cmd/demo/*.go') go.mod go.sum
 
-.PHONY: $(TARGET) generate test run clean
+.PHONY: demo generate test run clean
 
-build: $(TARGET)
+build: demo
 
-$(TARGET): $(SRCS)
-	go build
+demo: $(SRCS)
+	go build ./cmd/demo
 
 generate: $(SRCS)
 	go generate ./pkg/...
@@ -14,8 +13,8 @@ generate: $(SRCS)
 test:
 	go test -v ./...
 
-run: $(TARGET)
-	./$(TARGET)
+run: demo
+	./demo
 
 clean:
 	go clean

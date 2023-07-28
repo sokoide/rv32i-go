@@ -10,10 +10,10 @@ OUTDIR = ~/tmp/riscv1
 
 COMMONFILES =
 SRCS = main.c
-ASMSRCS = start.S
+ASMSRCS = start.s
 
 HEADERS :=  $(shell find . -type f -name '*.h')
-OBJS := $(ASMSRCS:.S=.o) $(SRCS:.c=.o)
+OBJS := $(ASMSRCS:.s=.o) $(SRCS:.c=.o)
 
 OUTOBJS = $(addprefix $(OUTDIR)/,$(OBJS))
 
@@ -31,7 +31,7 @@ build: $(OUTOBJS)
 $(OUTDIR)/%.o : %.c | $(OUTDIR)
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-$(OUTDIR)/%.o : %.S | $(OUTDIR)
+$(OUTDIR)/%.o : %.s | $(OUTDIR)
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 $(OUTDIR):
