@@ -52,8 +52,9 @@ func main() {
 	chkerr(err)
 
 	// emu.Run()
-	emu.StepUntil(0x1c)
+	emu.StepUntil(0x18)
 	emu.Dump()
+	emu.StepUntil(0x1c)
 
 	log.Info("* Completed")
 }
