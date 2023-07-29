@@ -1,2 +1,6 @@
-demo
+# binaries
+/demo
+/asm
+# tmp files
 tags
+*.output
