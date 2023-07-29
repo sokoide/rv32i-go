@@ -4,7 +4,11 @@ import (
 	"strconv"
 )
 
-func evaluate(expr expression) (int, error) {
+func evaluate_stmt(stmt statement) error {
+	return nil
+}
+
+func evaluate_expr(expr expression) (int, error) {
 	switch e := expr.(type) {
 
 	case *numberExpression:
@@ -14,17 +18,17 @@ func evaluate(expr expression) (int, error) {
 		}
 		return v, nil
 	case *parenExpression:
-		v, err := evaluate(e.SubExpr)
+		v, err := evaluate_expr(e.SubExpr)
 		if err != nil {
 			return 0, err
 		}
 		return v, nil
 	case *binOpExpression:
-		lhsV, err := evaluate(e.LHS)
+		lhsV, err := evaluate_expr(e.LHS)
 		if err != nil {
 			return 0, err
 		}
-		rhsV, err := evaluate(e.RHS)
+		rhsV, err := evaluate_expr(e.RHS)
 		if err != nil {
 			return 0, err
 		}

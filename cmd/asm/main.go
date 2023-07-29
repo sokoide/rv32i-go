@@ -54,12 +54,12 @@ func main() {
 	// log.SetLevel(log.InfoLevel)
 
 	log.Info("asm started")
-	// 	src := ` # This is a comment
-	// boot:
-	// 	li ra, 0
-	// 	li s0, 0 # This is a comment
-	// 	lui a0, 4`
-	src := `2*20+2`
+	src := `boot:
+# This is a comment line
+	li ra, 0
+	li s0, 0 # This is a comment
+	lui a0, 4`
+
 	log.Tracef("src: %s", src)
 
 	s := bufio.NewScanner(strings.NewReader(src))
@@ -68,14 +68,13 @@ func main() {
 	for s.Scan() {
 		source = append(source, s.Text())
 	}
-	scanner.Init(strings.Join(source, "\n"))
+	scanner.Init(strings.Join(source, "\n") + "\n")
 
-	var program expression = parse(scanner)
-	v, err := evaluate(program)
+	var program statement = parse(scanner)
+	err := evaluate_stmt(program)
 	if err != nil {
 		panic(nil)
 	}
-	log.Infof("%v", v)
 
 	emu := rv32i.NewEmulator()
 	emu.Reset()

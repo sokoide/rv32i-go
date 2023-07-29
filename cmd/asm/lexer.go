@@ -1,5 +1,7 @@
 package main
 
+import "golang.org/x/exp/slices"
+
 const (
 	// EOF end of file
 	EOF = -1
@@ -8,6 +10,14 @@ const (
 )
 
 var keywords = map[string]int{}
+
+// TODO: make it a map and map "sp" -> 2
+var registers = []string{
+	"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "fp", "s1", "a0",
+	"a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6",
+	"s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6",
+	"x0", "x1", "x2", "x3", "x4", "x5", // TODO:
+}
 
 type token struct {
 	tok int
@@ -33,10 +43,23 @@ func (s *scanner) Init(src string) {
 
 func (s *scanner) Scan() (tok int, lit string, pos position) {
 	s.skipWhiteSpace()
+	s.skipComment()
 	pos = s.position()
 	switch ch := s.peek(); {
 	case isDigit(ch):
 		tok, lit = NUMBER, s.scanNumber()
+	case isLetter(ch):
+		lit = s.scanIdentifier()
+		tok = s.tokFromLit(lit)
+	case ch == '\n':
+		s.next()
+		tok, lit = LF, ""
+	case ch == ':':
+		s.next()
+		tok, lit = COLON, ":"
+	case ch == ',':
+		s.next()
+		tok, lit = COMMA, ","
 	default:
 		switch ch {
 		case -1:
@@ -61,7 +84,7 @@ func isDigit(ch rune) bool {
 }
 
 func isWhiteSpace(ch rune) bool {
-	return ch == ' ' || ch == '\t' || ch == '\n'
+	return ch == ' ' || ch == '\t'
 }
 
 func (s *scanner) peek() rune {
@@ -96,6 +119,15 @@ func (s *scanner) skipWhiteSpace() {
 	}
 }
 
+func (s *scanner) skipComment() {
+	if s.peek() == '#' {
+		s.next()
+		for s.peek() != '\n' {
+			s.next()
+		}
+	}
+}
+
 func (s *scanner) scanIdentifier() string {
 	var ret []rune
 	for isLetter(s.peek()) || isDigit(s.peek()) {
@@ -103,6 +135,21 @@ func (s *scanner) scanIdentifier() string {
 		s.next()
 	}
 	return string(ret)
+}
+
+func (s *scanner) tokFromLit(lit string) int {
+	if slices.Contains(registers, lit) {
+		return REGISTER
+	}
+
+	switch lit {
+	case "li":
+		return LI
+	case "lui":
+		return LUI
+	default:
+		return IDENT
+	}
 }
 
 func (s *scanner) scanNumber() string {

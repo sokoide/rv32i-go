@@ -1,6 +1,8 @@
 package main
 
 type (
+	statement interface {
+	}
 	expression interface {
 		expression()
 	}

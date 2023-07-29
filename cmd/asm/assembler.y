@@ -1,14 +1,19 @@
 %{
 package main
+
+import "fmt"
 %}
 
 %union{
+    stmt    statement
     expr    expression
     tok     token
 }
 
-%type<expr> program expr
-%token<tok> LF NUMBER IDENT
+%type<stmt> program stmt label_stmt li_stmt
+%type<expr> expr
+%token<tok> LF COLON COMMA NUMBER IDENT
+%token<tok> REGISTER LI LUI
 
 %left '+' '-'
 %left '*' '/'
@@ -16,25 +21,36 @@ package main
 %start program
 
 %%
-/* program: line {
-        assemblerlex.(*lexer).program = $$
+program: /* empty */ {
+        $$ = nil
     }
-    | program line {
-        assemblerlex.(*lexer).program =$$
+    | program stmt LF
+
+stmt: /* empty */ {
+    fmt.Println("* comment or empty stmt")
+    }
+    | label_stmt { }
+    | li_stmt {}
+    | lui_stmt {}
+    | expr {
+        $$ = $1
+        // assemblerlex.(*lexer).program = $$
+        // TODO:
+        assemblerlex.(*lexer).program = nil
+        fmt.Printf("* stmt expr %v\n", $$)
     }
 
-line: label LF {
-        assemblerlex.(*lexer).line =$$
-    }
+label_stmt: IDENT COLON {
+    fmt.Printf("* label_stmt: %+v\n", $1)
+}
 
-label: IDENT ':' {
-        assemblerlex.(*lexer).label =$$
-    } */
+li_stmt: LI REGISTER COMMA NUMBER {
+    fmt.Printf("* li_stmt: %+v\n", $1)
+}
 
-program: expr {
-		$$ = $1
-        assemblerlex.(*lexer).program = $$
-	}
+lui_stmt: LUI REGISTER COMMA NUMBER {
+    fmt.Printf("* lui_stmt: %+v\n", $1)
+}
 
 expr: NUMBER {
         $$ = &numberExpression{Lit: $1.lit}
