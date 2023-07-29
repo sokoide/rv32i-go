@@ -43,7 +43,7 @@ func (l *lexer) Error(e string) {
 func parse(s *scanner) *program {
 	l := lexer{s: s}
 	l.program = &program{
-		statements: make([]statement, 0),
+		statements: make([]*statement, 0),
 	}
 	if assemblerParse(&l) != 0 {
 		panic("Parse error")

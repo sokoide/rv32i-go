@@ -2,10 +2,14 @@ package main
 
 type (
 	program struct {
-		statements []statement
+		statements []*statement
 	}
 
-	statement interface {
+	statement struct {
+		opcode string
+		op1    int
+		op2    int
+		op3    int
 	}
 	expression interface {
 		expression()

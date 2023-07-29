@@ -19,6 +19,10 @@ var registers = []string{
 	"x0", "x1", "x2", "x3", "x4", "x5", // TODO:
 }
 
+var regs = map[string]int{
+	"zero": 0,
+}
+
 type token struct {
 	tok int
 	lit string

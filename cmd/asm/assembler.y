@@ -1,13 +1,16 @@
 %{
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "strconv"
+)
 
 %}
 
 %union{
-    program program
-    stmt    statement
+    program *program
+    stmt    *statement
     expr    expression
     tok     token
 }
@@ -26,45 +29,63 @@ import "fmt"
 %%
 program: /* empty */ {
     fmt.Println("* empty program")
-        $$ = program{
-            statements: make([]statement, 0),
+        $$ = &program{
+            statements: make([]*statement, 0),
         }
-        assemblerlex.(*lexer).program = &$$
+        assemblerlex.(*lexer).program = $$
     }
     | program stmt LF {
         // $$.statements = append($1.statements, $2)
         fmt.Printf("* appendind stmt %v, stmt count %d\n", $2, len($$.statements))
-        $$ = program {
+        $$ = &program {
             statements: append($1.statements, $2),
         }
-        assemblerlex.(*lexer).program = &$$
+        assemblerlex.(*lexer).program = $$
     }
 
 stmt: /* empty */ {
         fmt.Println("* comment or empty stmt")
-        $$ = nil
+        $$ = &statement{
+            opcode: "comment",
+        }
     }
     | label_stmt { $$ = $1}
     | li_stmt { $$ = $1 }
     | lui_stmt { $$ = $1 }
     | expr {
         fmt.Printf("* stmt expr %v\n", $$)
-        $$ = $1
+        $$ = &statement{
+            opcode: "expr",
+        }
     }
 
 label_stmt: IDENT COLON {
     fmt.Printf("* label_stmt: %+v\n", $1)
-        $$ = $1
+        $$ = &statement{
+            opcode: "label",
+        }
 }
 
 li_stmt: LI REGISTER COMMA NUMBER {
     fmt.Printf("* li_stmt: %+v\n", $1)
-        $$ = $1
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+           opcode: $1.lit,
+           op1: regs[$2.lit],
+           op2: val,
+        }
 }
 
 lui_stmt: LUI REGISTER COMMA NUMBER {
     fmt.Printf("* lui_stmt: %+v\n", $1)
-        $$ = $1
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+           opcode: $1.lit,
+           op1: regs[$2.lit],
+           op2: val,
+        }
 }
 
 expr: NUMBER {
@@ -87,3 +108,8 @@ expr: NUMBER {
     }
 
 %%
+func checkerr(err error) {
+    if err != nil {
+        panic(err)
+    }
+}
