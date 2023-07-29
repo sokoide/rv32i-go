@@ -9,12 +9,13 @@ import __yyfmt__ "fmt"
 
 import "fmt"
 
-//line cmd/asm/assembler.y:7
+//line cmd/asm/assembler.y:8
 type assemblerSymType struct {
-	yys  int
-	stmt statement
-	expr expression
-	tok  token
+	yys     int
+	program program
+	stmt    statement
+	expr    expression
+	tok     token
 }
 
 const LF = 57346
@@ -52,7 +53,7 @@ const assemblerEofCode = 1
 const assemblerErrCode = 2
 const assemblerInitialStackSize = 16
 
-//line cmd/asm/assembler.y:74
+//line cmd/asm/assembler.y:89
 
 //line yacctab:1
 var assemblerExca = [...]int8{
@@ -79,12 +80,12 @@ var assemblerPact = [...]int16{
 }
 
 var assemblerPgo = [...]int8{
-	0, 36, 35, 34, 33, 4, 32,
+	0, 36, 35, 34, 33, 32, 4,
 }
 
 var assemblerR1 = [...]int8{
 	0, 1, 1, 2, 2, 2, 2, 2, 3, 4,
-	6, 5, 5, 5, 5, 5, 5,
+	5, 6, 6, 6, 6, 6, 6,
 }
 
 var assemblerR2 = [...]int8{
@@ -93,9 +94,9 @@ var assemblerR2 = [...]int8{
 }
 
 var assemblerChk = [...]int16{
-	-1000, -1, -2, -3, -4, -6, -5, 8, 10, 11,
+	-1000, -1, -2, -3, -4, -5, -6, 8, 10, 11,
 	7, 16, 4, 12, 13, 14, 15, 5, 9, 9,
-	-5, -5, -5, -5, -5, 6, 6, 17, 7, 7,
+	-6, -6, -6, -6, -6, 6, 6, 17, 7, 7,
 }
 
 var assemblerDef = [...]int8{
@@ -459,92 +460,111 @@ assemblerdefault:
 
 	case 1:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
-//line cmd/asm/assembler.y:24
+//line cmd/asm/assembler.y:27
 		{
-			assemblerVAL.stmt = nil
+			fmt.Println("* empty program")
+			assemblerVAL.program = program{
+				statements: make([]statement, 0),
+			}
+			assemblerlex.(*lexer).program = &assemblerVAL.program
+		}
+	case 2:
+		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
+//line cmd/asm/assembler.y:34
+		{
+			// $$.statements = append($1.statements, $2)
+			fmt.Printf("* appendind stmt %v, stmt count %d\n", assemblerDollar[2].stmt, len(assemblerVAL.program.statements))
+			assemblerVAL.program = program{
+				statements: append(assemblerDollar[1].program.statements, assemblerDollar[2].stmt),
+			}
+			assemblerlex.(*lexer).program = &assemblerVAL.program
 		}
 	case 3:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
-//line cmd/asm/assembler.y:29
+//line cmd/asm/assembler.y:43
 		{
 			fmt.Println("* comment or empty stmt")
+			assemblerVAL.stmt = nil
 		}
 	case 4:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:32
+//line cmd/asm/assembler.y:47
 		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 5:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:33
+//line cmd/asm/assembler.y:48
 		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 6:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:34
+//line cmd/asm/assembler.y:49
 		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 7:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:35
+//line cmd/asm/assembler.y:50
 		{
-			assemblerVAL.stmt = assemblerDollar[1].expr
-			// assemblerlex.(*lexer).program = $$
-			// TODO:
-			assemblerlex.(*lexer).program = nil
 			fmt.Printf("* stmt expr %v\n", assemblerVAL.stmt)
+			assemblerVAL.stmt = assemblerDollar[1].expr
 		}
 	case 8:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line cmd/asm/assembler.y:43
+//line cmd/asm/assembler.y:55
 		{
 			fmt.Printf("* label_stmt: %+v\n", assemblerDollar[1].tok)
+			assemblerVAL.stmt = assemblerDollar[1].tok
 		}
 	case 9:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:47
+//line cmd/asm/assembler.y:60
 		{
 			fmt.Printf("* li_stmt: %+v\n", assemblerDollar[1].tok)
+			assemblerVAL.stmt = assemblerDollar[1].tok
 		}
 	case 10:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:51
+//line cmd/asm/assembler.y:65
 		{
 			fmt.Printf("* lui_stmt: %+v\n", assemblerDollar[1].tok)
+			assemblerVAL.stmt = assemblerDollar[1].tok
 		}
 	case 11:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:55
+//line cmd/asm/assembler.y:70
 		{
 			assemblerVAL.expr = &numberExpression{Lit: assemblerDollar[1].tok.lit}
 		}
 	case 12:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:58
+//line cmd/asm/assembler.y:73
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('+'), RHS: assemblerDollar[3].expr}
 		}
 	case 13:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:61
+//line cmd/asm/assembler.y:76
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('-'), RHS: assemblerDollar[3].expr}
 		}
 	case 14:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:64
+//line cmd/asm/assembler.y:79
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('*'), RHS: assemblerDollar[3].expr}
 		}
 	case 15:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:67
+//line cmd/asm/assembler.y:82
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('/'), RHS: assemblerDollar[3].expr}
 		}
 	case 16:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:70
+//line cmd/asm/assembler.y:85
 		{
 			assemblerVAL.expr = &parenExpression{SubExpr: assemblerDollar[2].expr}
 		}

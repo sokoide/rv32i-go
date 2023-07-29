@@ -1,8 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
+
+func evaluate_program(prog *program) error {
+	log.Infof("evaluate_program: stmt=%d", len(prog.statements))
+	for idx, stmt := range prog.statements {
+		fmt.Printf("[%d] %+v\n", idx, stmt)
+	}
+	return nil
+}
 
 func evaluate_stmt(stmt statement) error {
 	return nil

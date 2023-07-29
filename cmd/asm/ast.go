@@ -1,6 +1,10 @@
 package main
 
 type (
+	program struct {
+		statements []statement
+	}
+
 	statement interface {
 	}
 	expression interface {

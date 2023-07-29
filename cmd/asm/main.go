@@ -19,7 +19,7 @@ type lexer struct {
 	s         *scanner
 	recentLit string
 	recentPos position
-	program   expression
+	program   *program
 }
 
 // Lex Called by goyacc
@@ -40,8 +40,11 @@ func (l *lexer) Error(e string) {
 		l.recentPos.Line, l.recentPos.Column, l.recentLit, e)
 }
 
-func parse(s *scanner) expression {
+func parse(s *scanner) *program {
 	l := lexer{s: s}
+	l.program = &program{
+		statements: make([]statement, 0),
+	}
 	if assemblerParse(&l) != 0 {
 		panic("Parse error")
 	}
@@ -58,7 +61,8 @@ func main() {
 # This is a comment line
 	li ra, 0
 	li s0, 0 # This is a comment
-	lui a0, 4`
+	lui a0, 4
+	li a1, 100`
 
 	log.Tracef("src: %s", src)
 
@@ -70,8 +74,11 @@ func main() {
 	}
 	scanner.Init(strings.Join(source, "\n") + "\n")
 
-	var program statement = parse(scanner)
-	err := evaluate_stmt(program)
+	var program *program = parse(scanner)
+	log.Debugf("* program=%+v", program)
+
+	log.Info("* start evaluation")
+	err := evaluate_program(program)
 	if err != nil {
 		panic(nil)
 	}
