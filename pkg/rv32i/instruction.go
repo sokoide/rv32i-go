@@ -155,6 +155,14 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpAdd:
 		code = (uint32(op3) << 20) + (uint32(op2) << 15) + (uint32(op1) << 7) + 0b0110011
 		return code
+	case OpJal:
+		imm20 := (uint32(op2) >> 20) & 0b1
+		imm101 := (uint32(op2) >> 1) & 0b11_11111111
+		imm11 := (uint32(op2) >> 11) & 0b1
+		imm1912 := (uint32(op2) >> 12) & 0b11111111
+		imm := imm20<<31 | imm101<<21 | imm11<<20 | imm1912<<12
+		code = imm | (uint32(op1) << 7) | 0b1101111
+		return code
 	// TODO:
 	default:
 		return 1

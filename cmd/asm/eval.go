@@ -66,16 +66,30 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) != 0 {
 			return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2)}, true
 		} else {
-			// TODO: support negative numbers
-			log.Debugf("%d, %d\n", stmt.op2>>12, stmt.op2&0b1111_1111_1111)
+			hi := int(rv32i.SignExtension((uint32(stmt.op2) >> 12), 20))
+			low := stmt.op2 & 0b1111_1111_1111
+			log.Debugf("%d, %d\n", hi, low)
 			return []uint32{
-				rv32i.GenCode(rv32i.OpLui, stmt.op1, stmt.op2>>12, 0),
-				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2&0b1111_1111_1111),
+				rv32i.GenCode(rv32i.OpLui, stmt.op1, hi, 0),
+				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
 			}, true
 		}
 	case "add":
 		// op1: rd, op2: rs1: op3: rs2
 		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "jal":
+		if stmt.str1 == "" {
+			// op1: rd, op2: offset
+			return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, stmt.op2, stmt.op3)}, true
+		} else {
+			// op1: label
+			// if the labels is located  +/- 1KB from regx, use 'jalr regx, imm'
+			// or, if the absolute address is <512KB from regx, use 'jal regx, imm'
+			// otherwise, insert auipc and jal
+			// to simplify, the assembler always uses 'jal x0, imm' assuming the target is
+			// located between 0x0000 and 0x80000 (512KB)
+			panic("jal label not implemented")
+		}
 	case "label":
 		e.labels[stmt.str1] = e.PC
 		return []uint32{0}, false

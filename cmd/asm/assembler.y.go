@@ -32,6 +32,7 @@ const LUI = 57353
 const ADDI = 57354
 const ADD = 57355
 const LI = 57356
+const JAL = 57357
 
 var assemblerToknames = [...]string{
 	"$end",
@@ -48,6 +49,7 @@ var assemblerToknames = [...]string{
 	"ADDI",
 	"ADD",
 	"LI",
+	"JAL",
 	"'+'",
 	"'-'",
 	"'*'",
@@ -62,7 +64,7 @@ const assemblerEofCode = 1
 const assemblerErrCode = 2
 const assemblerInitialStackSize = 16
 
-//line cmd/asm/assembler.y:147
+//line cmd/asm/assembler.y:168
 
 func checkerr(err error) {
 	if err != nil {
@@ -79,55 +81,60 @@ var assemblerExca = [...]int8{
 
 const assemblerPrivate = 57344
 
-const assemblerLast = 56
+const assemblerLast = 62
 
 var assemblerAct = [...]int8{
-	9, 16, 15, 47, 11, 10, 12, 14, 13, 21,
-	22, 48, 44, 17, 19, 20, 21, 22, 29, 39,
-	30, 31, 32, 33, 19, 20, 21, 22, 16, 42,
-	8, 27, 26, 25, 24, 23, 43, 41, 40, 46,
-	17, 45, 38, 37, 36, 35, 34, 28, 18, 7,
-	6, 5, 4, 3, 2, 1,
+	10, 18, 17, 53, 12, 11, 13, 15, 14, 16,
+	23, 24, 31, 30, 19, 54, 21, 22, 23, 24,
+	33, 44, 34, 35, 36, 37, 21, 22, 23, 24,
+	18, 49, 9, 47, 29, 28, 27, 26, 25, 50,
+	48, 46, 45, 19, 52, 51, 43, 42, 41, 40,
+	39, 38, 32, 20, 8, 7, 6, 5, 4, 3,
+	2, 1,
 }
 
 var assemblerPact = [...]int16{
-	-1000, -6, 44, -1000, -1000, -1000, -1000, -1000, -1000, 9,
-	26, 25, 24, 23, 22, 42, -1000, 21, -1000, 21,
-	21, 21, 21, 40, 39, 38, 37, 36, -1000, -1,
-	-8, -8, -1000, -1000, 31, 30, 20, 29, 3, -1000,
-	-1000, -1000, 35, -1000, 33, -4, 2, -1000, -1000,
+	-1000, -6, 49, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	10, 29, 28, 27, 26, 25, 4, 47, -1000, 23,
+	-1000, 23, 23, 23, 23, 45, 44, 43, 42, 41,
+	40, -1000, -1000, 0, -8, -8, -1000, -1000, 35, 34,
+	24, 33, 22, 32, -1000, -1000, -1000, 39, -1000, 38,
+	-1000, -4, 6, -1000, -1000,
 }
 
 var assemblerPgo = [...]int8{
-	0, 55, 54, 53, 52, 51, 50, 49, 30, 0,
+	0, 61, 60, 59, 58, 57, 56, 55, 54, 32,
+	0,
 }
 
 var assemblerR1 = [...]int8{
 	0, 1, 1, 2, 2, 2, 2, 2, 2, 2,
-	2, 3, 4, 5, 6, 7, 8, 9, 9, 9,
-	9, 9, 9,
+	2, 2, 3, 4, 5, 6, 7, 8, 8, 9,
+	10, 10, 10, 10, 10, 10,
 }
 
 var assemblerR2 = [...]int8{
 	0, 0, 3, 0, 1, 1, 1, 1, 1, 1,
-	1, 4, 4, 6, 4, 6, 2, 1, 3, 3,
-	3, 3, 3,
+	1, 1, 4, 4, 6, 4, 6, 4, 2, 2,
+	1, 3, 3, 3, 3, 3,
 }
 
 var assemblerChk = [...]int16{
 	-1000, -1, -2, -3, -4, -5, -6, -7, -8, -9,
-	11, 10, 12, 14, 13, 8, 7, 19, 4, 15,
-	16, 17, 18, 9, 9, 9, 9, 9, 5, -9,
-	-9, -9, -9, -9, 6, 6, 6, 6, 6, 20,
-	7, 7, 9, 7, 9, 6, 6, 7, 9,
+	-10, 11, 10, 12, 14, 13, 15, 8, 7, 20,
+	4, 16, 17, 18, 19, 9, 9, 9, 9, 9,
+	9, 8, 5, -10, -10, -10, -10, -10, 6, 6,
+	6, 6, 6, 6, 21, 7, 7, 9, 7, 9,
+	7, 6, 6, 7, 9,
 }
 
 var assemblerDef = [...]int8{
 	1, -2, 0, 4, 5, 6, 7, 8, 9, 10,
-	0, 0, 0, 0, 0, 0, 17, 0, 2, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 16, 0,
-	18, 19, 20, 21, 0, 0, 0, 0, 0, 22,
-	11, 12, 0, 14, 0, 0, 0, 13, 15,
+	11, 0, 0, 0, 0, 0, 0, 0, 20, 0,
+	2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 18, 19, 0, 21, 22, 23, 24, 0, 0,
+	0, 0, 0, 0, 25, 12, 13, 0, 15, 0,
+	17, 0, 0, 14, 16,
 }
 
 var assemblerTok1 = [...]int8{
@@ -135,12 +142,12 @@ var assemblerTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	19, 20, 17, 15, 3, 16, 3, 18,
+	20, 21, 18, 16, 3, 17, 3, 19,
 }
 
 var assemblerTok2 = [...]int8{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
-	12, 13, 14,
+	12, 13, 14, 15,
 }
 
 var assemblerTok3 = [...]int8{
@@ -486,7 +493,7 @@ assemblerdefault:
 
 	case 1:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
-//line cmd/asm/assembler.y:31
+//line cmd/asm/assembler.y:32
 		{
 			fmt.Println("* empty program")
 			assemblerVAL.program = &program{
@@ -496,7 +503,7 @@ assemblerdefault:
 		}
 	case 2:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:38
+//line cmd/asm/assembler.y:39
 		{
 			fmt.Printf("* appendind stmt %v, stmt count %d\n", assemblerDollar[2].stmt, len(assemblerVAL.program.statements))
 			assemblerVAL.program = &program{
@@ -506,7 +513,7 @@ assemblerdefault:
 		}
 	case 3:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
-//line cmd/asm/assembler.y:46
+//line cmd/asm/assembler.y:47
 		{
 			fmt.Println("* comment or empty stmt")
 			assemblerVAL.stmt = &statement{
@@ -515,52 +522,58 @@ assemblerdefault:
 		}
 	case 4:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:52
+//line cmd/asm/assembler.y:53
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 5:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:53
+//line cmd/asm/assembler.y:54
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 6:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:54
+//line cmd/asm/assembler.y:55
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 7:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:55
+//line cmd/asm/assembler.y:56
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 8:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:56
+//line cmd/asm/assembler.y:57
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 9:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:57
+//line cmd/asm/assembler.y:58
 		{
 			assemblerVAL.stmt = assemblerDollar[1].stmt
 		}
 	case 10:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:58
+//line cmd/asm/assembler.y:59
+		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
+		}
+	case 11:
+		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
+//line cmd/asm/assembler.y:60
 		{
 			fmt.Printf("* stmt expr %v\n", assemblerVAL.stmt)
 			assemblerVAL.stmt = &statement{
 				opcode: "expr",
 			}
 		}
-	case 11:
+	case 12:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:65
+//line cmd/asm/assembler.y:67
 		{
 			fmt.Printf("* lui_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -571,9 +584,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 12:
+	case 13:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:76
+//line cmd/asm/assembler.y:78
 		{
 			fmt.Printf("* auipc_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -584,9 +597,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 13:
+	case 14:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line cmd/asm/assembler.y:87
+//line cmd/asm/assembler.y:89
 		{
 			fmt.Printf("* addi_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -598,9 +611,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 14:
+	case 15:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:99
+//line cmd/asm/assembler.y:101
 		{
 			fmt.Printf("* li_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -611,9 +624,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 15:
+	case 16:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line cmd/asm/assembler.y:110
+//line cmd/asm/assembler.y:112
 		{
 			fmt.Printf("* add_stmt: %+v\n", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -623,9 +636,32 @@ assemblerdefault:
 				op3:    regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 16:
+	case 17:
+		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
+//line cmd/asm/assembler.y:122
+		{
+			fmt.Printf("* jal_stmt: %+v\n", assemblerDollar[1].tok)
+			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
+			chkerr(err)
+			assemblerVAL.stmt = &statement{
+				opcode: assemblerDollar[1].tok.lit,
+				op1:    regs[assemblerDollar[2].tok.lit],
+				op2:    val,
+			}
+		}
+	case 18:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line cmd/asm/assembler.y:120
+//line cmd/asm/assembler.y:132
+		{
+			fmt.Printf("* jal_stmt (label): %+v\n", assemblerDollar[1].tok)
+			assemblerVAL.stmt = &statement{
+				opcode: assemblerDollar[1].tok.lit,
+				str1:   assemblerDollar[2].tok.lit,
+			}
+		}
+	case 19:
+		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
+//line cmd/asm/assembler.y:141
 		{
 			fmt.Printf("* label_stmt: %+v\n", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -633,39 +669,39 @@ assemblerdefault:
 				str1:   assemblerDollar[1].tok.lit,
 			}
 		}
-	case 17:
+	case 20:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:128
+//line cmd/asm/assembler.y:149
 		{
 			assemblerVAL.expr = &numberExpression{Lit: assemblerDollar[1].tok.lit}
 		}
-	case 18:
+	case 21:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:131
+//line cmd/asm/assembler.y:152
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('+'), RHS: assemblerDollar[3].expr}
 		}
-	case 19:
+	case 22:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:134
+//line cmd/asm/assembler.y:155
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('-'), RHS: assemblerDollar[3].expr}
 		}
-	case 20:
+	case 23:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:137
+//line cmd/asm/assembler.y:158
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('*'), RHS: assemblerDollar[3].expr}
 		}
-	case 21:
+	case 24:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:140
+//line cmd/asm/assembler.y:161
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('/'), RHS: assemblerDollar[3].expr}
 		}
-	case 22:
+	case 25:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:143
+//line cmd/asm/assembler.y:164
 		{
 			assemblerVAL.expr = &parenExpression{SubExpr: assemblerDollar[2].expr}
 		}

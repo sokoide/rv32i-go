@@ -70,7 +70,7 @@ func main() {
 	auipc sp, 1
 	addi sp, sp, -12
 	add sp, sp, a0
-#	jal riscv32_boot
+	jal riscv32_boot
 	li ra, -300 # This is never called
 	li a1, 1000000000 # This is never called
 	li a0, 1 # This is never called
