@@ -56,7 +56,7 @@ const assemblerEofCode = 1
 const assemblerErrCode = 2
 const assemblerInitialStackSize = 16
 
-//line cmd/asm/assembler.y:110
+//line cmd/asm/assembler.y:111
 
 func checkerr(err error) {
 	if err != nil {
@@ -531,11 +531,12 @@ assemblerdefault:
 			fmt.Printf("* label_stmt: %+v\n", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
 				opcode: "label",
+				str1:   assemblerDollar[1].tok.lit,
 			}
 		}
 	case 9:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:69
+//line cmd/asm/assembler.y:70
 		{
 			fmt.Printf("* li_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -548,7 +549,7 @@ assemblerdefault:
 		}
 	case 10:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line cmd/asm/assembler.y:80
+//line cmd/asm/assembler.y:81
 		{
 			fmt.Printf("* lui_stmt: %+v\n", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -561,37 +562,37 @@ assemblerdefault:
 		}
 	case 11:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line cmd/asm/assembler.y:91
+//line cmd/asm/assembler.y:92
 		{
 			assemblerVAL.expr = &numberExpression{Lit: assemblerDollar[1].tok.lit}
 		}
 	case 12:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:94
+//line cmd/asm/assembler.y:95
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('+'), RHS: assemblerDollar[3].expr}
 		}
 	case 13:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:97
+//line cmd/asm/assembler.y:98
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('-'), RHS: assemblerDollar[3].expr}
 		}
 	case 14:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:100
+//line cmd/asm/assembler.y:101
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('*'), RHS: assemblerDollar[3].expr}
 		}
 	case 15:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:103
+//line cmd/asm/assembler.y:104
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('/'), RHS: assemblerDollar[3].expr}
 		}
 	case 16:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line cmd/asm/assembler.y:106
+//line cmd/asm/assembler.y:107
 		{
 			assemblerVAL.expr = &parenExpression{SubExpr: assemblerDollar[2].expr}
 		}

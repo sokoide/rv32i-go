@@ -15,7 +15,7 @@ void riscv32_boot() {
 int main() {
     int a, b;
     char c, d;
-    a = 10;
+    a = 1000000000;
     b = 1;
     c = is_even(a);
     d = is_even(b);

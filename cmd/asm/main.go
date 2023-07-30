@@ -24,7 +24,10 @@ type lexer struct {
 
 // Lex Called by goyacc
 func (l *lexer) Lex(lval *assemblerSymType) int {
-	tok, lit, pos := l.s.Scan()
+	tok, lit, pos, err := l.s.Scan()
+	if err != nil {
+		log.Errorf("%v", err)
+	}
 	if tok == EOF {
 		return 0
 	}
@@ -52,6 +55,8 @@ func parse(s *scanner) *program {
 }
 
 func main() {
+	ev := NewEvaluator()
+
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
 	// log.SetLevel(log.InfoLevel)
@@ -59,10 +64,11 @@ func main() {
 	log.Info("asm started")
 	src := `boot:
 # This is a comment line
-	li ra, 0
+	li ra, -300
 	li s0, 0 # This is a comment
 	lui a0, 4
-	li a1, 100`
+label2:
+	li a1, 1000000000`
 
 	log.Tracef("src: %s", src)
 
@@ -78,7 +84,7 @@ func main() {
 	log.Debugf("* program=%+v", program)
 
 	log.Info("* start evaluation")
-	err := evaluate_program(program)
+	err := ev.evaluate_program(program)
 	if err != nil {
 		panic(nil)
 	}

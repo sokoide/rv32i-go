@@ -63,6 +63,7 @@ label_stmt: IDENT COLON {
     fmt.Printf("* label_stmt: %+v\n", $1)
         $$ = &statement{
             opcode: "label",
+            str1: $1.lit,
         }
 }
 

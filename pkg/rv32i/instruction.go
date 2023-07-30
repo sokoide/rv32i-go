@@ -140,6 +140,21 @@ func NewInstruction(instr uint32) *Instruction {
 	return &instance
 }
 
+func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
+	var code uint32
+	switch opn {
+	case OpLui:
+		code = (uint32(op2) << 12) + (uint32(op1) << 7) + 0b0110111
+		return code
+	case OpAddi:
+		code = (uint32(op3) << 20) + (uint32(op2) << 15) + (uint32(op1) << 7) + 0b0010011
+		return code
+	// TODO:
+	default:
+		return 1
+	}
+}
+
 func (i *Instruction) GetInstructionType() InstructionType {
 	switch i.Opcode {
 	case 0b0110111, 0b0010111:

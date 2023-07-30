@@ -7,7 +7,7 @@
 	.type	is_even,@function
 is_even:
 .Lfunc_begin0:
-	.file	0 "/Users/scott/repo/sokoide/rv32i-go/data" "main.c" md5 0xd9eb863840895378e9a64fab62ae38d5
+	.file	0 "/Users/scott/repo/sokoide/rv32i-go/data" "main.c" md5 0x81e62099034b4ec32b4417461e434da3
 	.loc	0 4 0
 	.cfi_sections .debug_frame
 	.cfi_startproc
@@ -85,7 +85,8 @@ main:
 	.cfi_offset s0, -8
 	addi	s0, sp, 32
 	.cfi_def_cfa s0, 0
-	li	a0, 10
+	lui	a0, 244141
+	addi	a0, a0, -1536
 .Ltmp4:
 	.loc	0 18 7 prologue_end
 	sw	a0, -12(s0)

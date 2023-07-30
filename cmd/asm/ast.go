@@ -10,6 +10,7 @@ type (
 		op1    int
 		op2    int
 		op3    int
+		str1   string
 	}
 	expression interface {
 		expression()
