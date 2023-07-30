@@ -211,10 +211,16 @@ func (s *scanner) tokFromLit(lit string) int {
 	}
 
 	switch lit {
-	case "li":
-		return LI
 	case "lui":
 		return LUI
+	case "auipc":
+		return AUIPC
+	case "addi":
+		return ADDI
+	case "li":
+		return LI
+	case "add":
+		return ADD
 	default:
 		return IDENT
 	}

@@ -52,6 +52,12 @@ func (e *Evaluator) evaluate_program(prog *program) error {
 
 func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	switch stmt.opcode {
+	case "lui":
+		// op1: rd, op2, imm
+		return []uint32{rv32i.GenCode(rv32i.OpLui, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "auipc":
+		// op1: rd, op2: imm
+		return []uint32{rv32i.GenCode(rv32i.OpAuipc, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "addi":
 		// op1: rd, op2: rs1: op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
@@ -67,9 +73,9 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2&0b1111_1111_1111),
 			}, true
 		}
-	case "lui":
-		// op1: rd, op2, imm
-		return []uint32{rv32i.GenCode(rv32i.OpLui, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "add":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "label":
 		e.labels[stmt.str1] = e.PC
 		return []uint32{0}, false
