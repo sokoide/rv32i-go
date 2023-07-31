@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -8,9 +9,10 @@ import (
 )
 
 type Evaluator struct {
-	labels map[string]int
-	code   []uint32
-	PC     int
+	labels         map[string]int
+	linksToResolve map[int]string
+	code           []uint32
+	PC             int
 }
 
 func NewEvaluator() *Evaluator {
@@ -19,6 +21,7 @@ func NewEvaluator() *Evaluator {
 
 func (e *Evaluator) reset() {
 	e.labels = make(map[string]int, 0)
+	e.linksToResolve = make(map[int]string, 0)
 	e.code = make([]uint32, 0)
 	e.PC = 0
 }
@@ -38,7 +41,7 @@ func (e *Evaluator) evaluate_program(prog *program) error {
 		}
 	}
 
-	// dumps")
+	// dumps
 	log.Debug("Labels)")
 	for key, val := range e.labels {
 		log.Debugf("%16s: 0x%08x", key, val)
@@ -47,6 +50,17 @@ func (e *Evaluator) evaluate_program(prog *program) error {
 	for idx, code := range e.code {
 		log.Debugf("0x%08x: 0x%08x", idx*4, code)
 	}
+	log.Debug("Links to Resolve)")
+	for key, val := range e.linksToResolve {
+		log.Debugf("0x%08x: %s", key, val)
+	}
+
+	e.resolveLinks()
+	log.Debug("After resolved)")
+	for key, _ := range e.linksToResolve {
+		log.Debugf("0x%08x: 0x%08x", key, e.code[key/4])
+	}
+
 	return nil
 }
 
@@ -63,7 +77,7 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "li":
 		// op1: rd, op2: imm
-		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) != 0 {
+		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) == 0 {
 			return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2)}, true
 		} else {
 			hi := int(rv32i.SignExtension((uint32(stmt.op2) >> 12), 20))
@@ -88,7 +102,13 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 			// otherwise, insert auipc and jal
 			// to simplify, the assembler always uses 'jal x0, imm' assuming the target is
 			// located between 0x0000 and 0x80000 (512KB)
-			panic("jal label not implemented")
+			if val, ok := e.labels[stmt.str1]; ok {
+				imm := val - e.PC
+				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, imm, 0)}, true
+			} else {
+				e.linksToResolve[e.PC] = stmt.str1
+				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, 0, 0)}, true
+			}
 		}
 	case "label":
 		e.labels[stmt.str1] = e.PC
@@ -98,6 +118,17 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	default:
 		// TODO:
 		return []uint32{0}, false
+	}
+}
+
+func (e *Evaluator) resolveLinks() {
+	for PC, label := range e.linksToResolve {
+		if val, ok := e.labels[label]; ok {
+			imm := val
+			e.code[PC/4] = rv32i.GenCode(rv32i.OpJal, 0, imm, 0)
+		} else {
+			panic(fmt.Sprintf("label %s not found", label))
+		}
 	}
 }
 

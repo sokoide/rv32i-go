@@ -77,6 +77,9 @@ func main() {
 	li a1, 2 # This is never called
 	li a3, 3 # This is never called
 riscv32_boot:
+	addi	sp, sp, -16
+	li ra, 1
+	jal boot
 `
 
 	log.Tracef("src: %s", src)
