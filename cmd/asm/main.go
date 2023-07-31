@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"os"
 	"strings"
 
@@ -35,18 +34,12 @@ func main() {
 riscv32_boot:
 	addi	sp, sp, -16
 	li ra, 1
-	jal boot
-`
+	jal boot`
 
 	log.Tracef("src: %s", src)
 
-	s := bufio.NewScanner(strings.NewReader(src))
-	scanner := new(rv32iasm.Scanner)
-	source := []string{}
-	for s.Scan() {
-		source = append(source, s.Text())
-	}
-	scanner.Init(strings.Join(source, "\n") + "\n")
+	reader := strings.NewReader(src)
+	scanner := rv32iasm.NewScanner(reader)
 
 	var program *rv32iasm.Program = scanner.Parse()
 	log.Debugf("* program=%+v", program)
