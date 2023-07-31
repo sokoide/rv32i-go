@@ -57,7 +57,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 
 	e.resolveLinks()
 	log.Debug("After resolved)")
-	for key, _ := range e.linksToResolve {
+	for key := range e.linksToResolve {
 		log.Debugf("0x%08x: 0x%08x", key, e.Code[key/4])
 	}
 

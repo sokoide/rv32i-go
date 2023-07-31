@@ -147,7 +147,7 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 		code = (uint32(op2) << 12) + (uint32(op1) << 7) + 0b0110111
 		return code
 	case OpAuipc:
-		code = (uint32(op2) << 20) + (uint32(op1) << 7) + 0b0010111
+		code = (uint32(op2) << 12) + (uint32(op1) << 7) + 0b0010111
 		return code
 	case OpAddi:
 		code = (uint32(op3) << 20) + (uint32(op2) << 15) + (uint32(op1) << 7) + 0b0010011

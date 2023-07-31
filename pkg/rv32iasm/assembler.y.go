@@ -8,7 +8,7 @@ import __yyfmt__ "fmt"
 //line pkg/rv32iasm/assembler.y:2
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -495,7 +495,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:36
 		{
-			fmt.Println("* empty program")
+			log.Debug("* empty program")
 			assemblerVAL.program = &Program{
 				statements: make([]*statement, 0),
 			}
@@ -505,7 +505,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:43
 		{
-			fmt.Printf("* appendind stmt %v, stmt count %d\n", assemblerDollar[2].stmt, len(assemblerVAL.program.statements))
+			log.Debugf("* appendind stmt %v, stmt count %d", assemblerDollar[2].stmt, len(assemblerVAL.program.statements))
 			assemblerVAL.program = &Program{
 				statements: append(assemblerDollar[1].program.statements, assemblerDollar[2].stmt),
 			}
@@ -515,7 +515,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-0 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:51
 		{
-			fmt.Println("* comment or empty stmt")
+			log.Debug("* comment or empty stmt")
 			assemblerVAL.stmt = &statement{
 				opcode: "comment",
 			}
@@ -566,7 +566,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:64
 		{
-			fmt.Printf("* stmt expr %v\n", assemblerVAL.stmt)
+			log.Debugf("* stmt expr %v", assemblerVAL.stmt)
 			assemblerVAL.stmt = &statement{
 				opcode: "expr",
 			}
@@ -575,7 +575,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:71
 		{
-			fmt.Printf("* lui_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* lui_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
 			chkerr(err)
 			assemblerVAL.stmt = &statement{
@@ -588,7 +588,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:82
 		{
-			fmt.Printf("* auipc_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* auipc_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
 			chkerr(err)
 			assemblerVAL.stmt = &statement{
@@ -601,7 +601,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:93
 		{
-			fmt.Printf("* addi_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* addi_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
 			chkerr(err)
 			assemblerVAL.stmt = &statement{
@@ -615,7 +615,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:105
 		{
-			fmt.Printf("* li_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* li_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
 			chkerr(err)
 			assemblerVAL.stmt = &statement{
@@ -628,7 +628,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:116
 		{
-			fmt.Printf("* add_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* add_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
 				opcode: assemblerDollar[1].tok.lit,
 				op1:    regs[assemblerDollar[2].tok.lit],
@@ -640,7 +640,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:126
 		{
-			fmt.Printf("* jal_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* jal_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
 			chkerr(err)
 			assemblerVAL.stmt = &statement{
@@ -653,7 +653,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:136
 		{
-			fmt.Printf("* jal_stmt (label): %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* jal_stmt (label): %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
 				opcode: assemblerDollar[1].tok.lit,
 				str1:   assemblerDollar[2].tok.lit,
@@ -663,7 +663,7 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:145
 		{
-			fmt.Printf("* label_stmt: %+v\n", assemblerDollar[1].tok)
+			log.Debugf("* label_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
 				opcode: "label",
 				str1:   assemblerDollar[1].tok.lit,

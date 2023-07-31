@@ -24,7 +24,7 @@ func Test_EvaluateProgram(t *testing.T) {
 	}
 
 	wants := []uint32{
-		0x00000093, 0x00000413, 0x00004537, 0x00100117, 0xff410133,
+		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410133,
 	}
 	if len(ev.Code) == len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

@@ -17,16 +17,17 @@ asm: $(ASMSRCS) yacc
 
 yacc: $(YACC_GOS)
 
+# y -> y.go
+#   if you want to remove '/line...'
+#   sed -i.back '/^\/\/line/ d' $@
+#   rm ${@}.back
 %.y.go: %.y
 	goyacc -p $(basename $(notdir $<)) -o $@ $<
-	# if you want to remove '/line...'
-	# sed -i.back '/^\/\/line/ d' $@
-	# rm ${@}.back
 
 generate: $(DEMOSRCS)
 	go generate ./pkg/...
 
-test:
+test: yacc
 	go test -v ./...
 
 run: demo

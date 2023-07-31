@@ -2,8 +2,8 @@
 package rv32iasm
 
 import (
-    "fmt"
     "strconv"
+    log "github.com/sirupsen/logrus"
 )
 func chkerr(err error) {
     if err != nil {
@@ -34,14 +34,14 @@ func chkerr(err error) {
 
 %%
 program: /* empty */ {
-    fmt.Println("* empty program")
+    log.Debug("* empty program")
         $$ = &Program{
             statements: make([]*statement, 0),
         }
         assemblerlex.(*lexer).program = $$
     }
     | program stmt LF {
-        fmt.Printf("* appendind stmt %v, stmt count %d\n", $2, len($$.statements))
+        log.Debugf("* appendind stmt %v, stmt count %d", $2, len($$.statements))
         $$ = &Program {
             statements: append($1.statements, $2),
         }
@@ -49,7 +49,7 @@ program: /* empty */ {
     }
 
 stmt: /* empty */ {
-        fmt.Println("* comment or empty stmt")
+        log.Debug("* comment or empty stmt")
         $$ = &statement{
             opcode: "comment",
         }
@@ -62,14 +62,14 @@ stmt: /* empty */ {
     | jal_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
-        fmt.Printf("* stmt expr %v\n", $$)
+        log.Debugf("* stmt expr %v", $$)
         $$ = &statement{
             opcode: "expr",
         }
     }
 
 lui_stmt: LUI REGISTER COMMA NUMBER {
-        fmt.Printf("* lui_stmt: %+v\n", $1)
+        log.Debugf("* lui_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
         chkerr(err)
         $$ = &statement{
@@ -80,7 +80,7 @@ lui_stmt: LUI REGISTER COMMA NUMBER {
     }
 
 auipc_stmt: AUIPC REGISTER COMMA NUMBER {
-        fmt.Printf("* auipc_stmt: %+v\n", $1)
+        log.Debugf("* auipc_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
         chkerr(err)
         $$ = &statement{
@@ -91,7 +91,7 @@ auipc_stmt: AUIPC REGISTER COMMA NUMBER {
     }
 
 addi_stmt: ADDI REGISTER COMMA REGISTER COMMA NUMBER {
-        fmt.Printf("* addi_stmt: %+v\n", $1)
+        log.Debugf("* addi_stmt: %+v", $1)
         val, err := strconv.Atoi($6.lit)
         chkerr(err)
         $$ = &statement{
@@ -103,7 +103,7 @@ addi_stmt: ADDI REGISTER COMMA REGISTER COMMA NUMBER {
     }
 
 li_stmt: LI REGISTER COMMA NUMBER {
-        fmt.Printf("* li_stmt: %+v\n", $1)
+        log.Debugf("* li_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
         chkerr(err)
         $$ = &statement{
@@ -114,7 +114,7 @@ li_stmt: LI REGISTER COMMA NUMBER {
     }
 
 add_stmt: ADD REGISTER COMMA REGISTER COMMA REGISTER {
-        fmt.Printf("* add_stmt: %+v\n", $1)
+        log.Debugf("* add_stmt: %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
             op1: regs[$2.lit],
@@ -124,7 +124,7 @@ add_stmt: ADD REGISTER COMMA REGISTER COMMA REGISTER {
     }
 
 jal_stmt: JAL REGISTER COMMA NUMBER {
-        fmt.Printf("* jal_stmt: %+v\n", $1)
+        log.Debugf("* jal_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
         chkerr(err)
         $$ = &statement{
@@ -134,7 +134,7 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
         }
     }
     | JAL IDENT {
-        fmt.Printf("* jal_stmt (label): %+v\n", $1)
+        log.Debugf("* jal_stmt (label): %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
             str1: $2.lit,
@@ -143,7 +143,7 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
 
 
 label_stmt: IDENT COLON {
-        fmt.Printf("* label_stmt: %+v\n", $1)
+        log.Debugf("* label_stmt: %+v", $1)
         $$ = &statement{
             opcode: "label",
             str1: $1.lit,
