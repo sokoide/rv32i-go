@@ -11,7 +11,7 @@ import (
 type Evaluator struct {
 	labels         map[string]int
 	linksToResolve map[int]string
-	code           []uint32
+	Code           []uint32
 	PC             int
 }
 
@@ -22,7 +22,7 @@ func NewEvaluator() *Evaluator {
 func (e *Evaluator) Reset() {
 	e.labels = make(map[string]int, 0)
 	e.linksToResolve = make(map[int]string, 0)
-	e.code = make([]uint32, 0)
+	e.Code = make([]uint32, 0)
 	e.PC = 0
 }
 
@@ -35,7 +35,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 		if generated {
 			for _, code := range codes {
 				log.Debugf("[%d] %+v, 0x%08x, 0b%032b\n", idx, stmt, code, code)
-				e.code = append(e.code, code)
+				e.Code = append(e.Code, code)
 			}
 			e.PC += 4 * len(codes)
 		}
@@ -47,7 +47,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 		log.Debugf("%16s: 0x%08x", key, val)
 	}
 	log.Debug("Code)")
-	for idx, code := range e.code {
+	for idx, code := range e.Code {
 		log.Debugf("0x%08x: 0x%08x", idx*4, code)
 	}
 	log.Debug("Links to Resolve)")
@@ -58,7 +58,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 	e.resolveLinks()
 	log.Debug("After resolved)")
 	for key, _ := range e.linksToResolve {
-		log.Debugf("0x%08x: 0x%08x", key, e.code[key/4])
+		log.Debugf("0x%08x: 0x%08x", key, e.Code[key/4])
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (e *Evaluator) resolveLinks() {
 	for PC, label := range e.linksToResolve {
 		if val, ok := e.labels[label]; ok {
 			imm := val
-			e.code[PC/4] = rv32i.GenCode(rv32i.OpJal, 0, imm, 0)
+			e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, 0, imm, 0)
 		} else {
 			panic(fmt.Sprintf("label %s not found", label))
 		}

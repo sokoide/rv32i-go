@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	ev := rv32iasm.NewEvaluator()
 
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
@@ -45,6 +44,7 @@ riscv32_boot:
 	log.Debugf("* program=%+v", program)
 
 	log.Info("* start evaluation")
+	ev := rv32iasm.NewEvaluator()
 	err := ev.EvaluateProgram(program)
 	if err != nil {
 		panic(nil)
