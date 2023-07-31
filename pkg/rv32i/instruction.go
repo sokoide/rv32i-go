@@ -163,6 +163,10 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 		imm := imm20<<31 | imm101<<21 | imm11<<20 | imm1912<<12
 		code = imm | (uint32(op1) << 7) | 0b1101111
 		return code
+	case OpJalr:
+		imm := (uint32(op2) << 20)
+		code = imm | (uint32(op3) << 15) | (uint32(op1) << 7) | 0b1100111
+		return code
 	// TODO:
 	default:
 		return 1

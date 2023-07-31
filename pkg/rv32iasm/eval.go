@@ -110,6 +110,9 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, 0, 0)}, true
 			}
 		}
+	case "jalr":
+		// op1: rd, op2: offset, op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpJalr, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "label":
 		e.labels[stmt.str1] = e.PC
 		return []uint32{0}, false

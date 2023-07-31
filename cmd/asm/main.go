@@ -33,7 +33,8 @@ func main() {
 riscv32_boot:
 	addi	sp, sp, -16
 	li ra, 1
-	jal boot`
+	jal boot
+	ret`
 
 	log.Tracef("src: %s", src)
 

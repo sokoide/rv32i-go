@@ -65,6 +65,12 @@ func (s *Scanner) Scan() (tok int, lit string, pos position, err error) {
 	case ch == ',':
 		s.next()
 		tok, lit = COMMA, ","
+	case ch == '(':
+		s.next()
+		tok, lit = LP, "("
+	case ch == ')':
+		s.next()
+		tok, lit = RP, ")"
 	default:
 		switch ch {
 		case -1:
@@ -158,6 +164,10 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return ADD
 	case "jal":
 		return JAL
+	case "jalr":
+		return JALR
+	case "ret":
+		return RET
 	default:
 		return IDENT
 	}

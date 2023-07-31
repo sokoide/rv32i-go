@@ -21,11 +21,11 @@ func chkerr(err error) {
 
 %type<program> program
 %type<stmt> stmt lui_stmt auipc_stmt addi_stmt li_stmt
-%type<stmt> add_stmt jal_stmt
+%type<stmt> add_stmt jal_stmt jalr_stmt ret_stmt
 %type<stmt> label_stmt
 %type<expr> expr
-%token<tok> LF COLON COMMA NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI ADDI ADD LI JAL
+%token<tok> LF COLON COMMA LP RP NUMBER IDENT
+%token<tok> REGISTER AUIPC LUI ADDI ADD LI JAL JALR RET
 
 %left '+' '-'
 %left '*' '/'
@@ -60,6 +60,7 @@ stmt: /* empty */ {
     | li_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
     | jal_stmt { $$ = $1 }
+    | ret_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
         log.Debugf("* stmt expr %v", $$)
@@ -141,6 +142,27 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
         }
     }
 
+jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
+        log.Debugf("* jalr_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+			op3: regs[$6.lit],
+        }
+    }
+
+ret_stmt: RET {
+        log.Debugf("* ret_stmt")
+        $$ = &statement{
+            opcode: "jalr",
+            op1: 0,
+            op2: 0,
+            op3: 1,
+        }
+    }
 
 label_stmt: IDENT COLON {
         log.Debugf("* label_stmt: %+v", $1)
