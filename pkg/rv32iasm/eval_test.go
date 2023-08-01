@@ -27,6 +27,7 @@ is_even:
 	srli	a1, a0, 31 #14
 	add	a1, a0, a1 #15
 	andi	a1, a1, -2
+	sub	a0, a0, a1
 riscv32_boot:
 `
 
@@ -46,10 +47,10 @@ riscv32_boot:
 	wants := []uint32{
 		// TODO: after moving riscv32_boot to the right place
 		// 0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x044000ef, 0x00008067,
-		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0440006f,
+		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0480006f,
 		0x00008067,
 		0xff010113, 0x00112623, 0x00812423, 0x01010413, 0xfea42a23, 0xff442503, 0x01f55593, 0x00b505b3,
-		0xffe5f593,
+		0xffe5f593, 0x40b50533,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

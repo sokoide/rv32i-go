@@ -174,6 +174,8 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return SRLI
 	case "add":
 		return ADD
+	case "sub":
+		return SUB
 	case "ret":
 		return RET
 	default:

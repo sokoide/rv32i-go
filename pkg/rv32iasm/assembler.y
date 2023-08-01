@@ -23,11 +23,13 @@ func chkerr(err error) {
 %type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
 %type<stmt> lw_stmt sw_stmt
 %type<stmt> addi_stmt li_stmt andi_stmt srli_stmt
-%type<stmt> add_stmt
+%type<stmt> add_stmt sub_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI ADDI LI ANDI SRLI ADD LW SW JAL JALR RET
+%token<tok> REGISTER AUIPC LUI JAL JALR RET LW SW ADDI LI ANDI SRLI
+%token<tok> ADD SUB
+
 
 %left '+' '-'
 %left '*' '/'
@@ -60,13 +62,14 @@ stmt: /* empty */ {
     | auipc_stmt { $$ = $1 }
     | jal_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
+    | lw_stmt { $$ = $1 }
+    | sw_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
     | andi_stmt { $$ = $1 }
     | srli_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
-    | lw_stmt { $$ = $1 }
-    | sw_stmt { $$ = $1 }
+    | sub_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
         log.Debugf("* stmt expr %v", $$)
@@ -211,6 +214,16 @@ srli_stmt: SRLI REGISTER COMMA REGISTER COMMA NUMBER {
 
 add_stmt: ADD REGISTER COMMA REGISTER COMMA REGISTER {
         log.Debugf("* add_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: regs[$4.lit],
+            op3: regs[$6.lit],
+        }
+    }
+
+sub_stmt: SUB REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* sub_stmt: %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
             op1: regs[$2.lit],
