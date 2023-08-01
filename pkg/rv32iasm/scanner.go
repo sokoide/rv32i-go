@@ -29,15 +29,15 @@ func (s *Scanner) init(src string) {
 	s.src = []rune(src)
 }
 
-func (s *Scanner) Parse() *Program {
+func (s *Scanner) Parse() (*Program, error) {
 	l := lexer{s: s}
 	l.program = &Program{
 		statements: make([]*statement, 0),
 	}
 	if assemblerParse(&l) != 0 {
-		panic("Parse error")
+		return nil, errors.New("Parse error")
 	}
-	return l.program
+	return l.program, nil
 }
 
 func (s *Scanner) Scan() (tok int, lit string, pos position, err error) {

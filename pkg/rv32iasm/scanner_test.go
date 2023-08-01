@@ -15,7 +15,10 @@ func Test_Parse(t *testing.T) {
 
 	reader := strings.NewReader(src)
 	scanner := NewScanner(reader)
-	program := scanner.Parse()
+	program, err := scanner.Parse()
+	if err != nil {
+		t.Error(err)
+	}
 
 	wants := []statement{
 		{"label", 0, 0, 0, "boot"},

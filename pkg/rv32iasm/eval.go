@@ -1,6 +1,7 @@
 package rv32iasm
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -124,15 +125,16 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	}
 }
 
-func (e *Evaluator) resolveLinks() {
+func (e *Evaluator) resolveLinks() error {
 	for PC, label := range e.linksToResolve {
 		if val, ok := e.labels[label]; ok {
 			imm := val
 			e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, 0, imm, 0)
 		} else {
-			panic(fmt.Sprintf("label %s not found", label))
+			return fmt.Errorf("label %s not found", label)
 		}
 	}
+	return nil
 }
 
 func (e *Evaluator) evaluate_expr(expr expression) (int, error) {
@@ -171,9 +173,9 @@ func (e *Evaluator) evaluate_expr(expr expression) (int, error) {
 		case '%':
 			return lhsV % rhsV, nil
 		default:
-			panic("Unknown operator")
+			return 0, errors.New("Unknown operator")
 		}
 	default:
-		panic("Unknown Expression type")
+		return 0, errors.New("Unknown Expression type")
 	}
 }

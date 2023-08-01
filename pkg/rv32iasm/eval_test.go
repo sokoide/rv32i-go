@@ -22,10 +22,13 @@ riscv32_boot:
 
 	reader := strings.NewReader(src)
 	scanner := NewScanner(reader)
-	program := scanner.Parse()
+	program, err := scanner.Parse()
+	if err != nil {
+		t.Error(err)
+	}
 
 	ev := NewEvaluator()
-	err := ev.EvaluateProgram(program)
+	err = ev.EvaluateProgram(program)
 	if err != nil {
 		t.Error("Failed to evaluate")
 	}

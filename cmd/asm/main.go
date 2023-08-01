@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	var err error
 
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.TraceLevel)
@@ -42,14 +43,18 @@ _out:
 	reader := strings.NewReader(src)
 	scanner := rv32iasm.NewScanner(reader)
 
-	var program *rv32iasm.Program = scanner.Parse()
+	var program *rv32iasm.Program
+	program, err = scanner.Parse()
+	if err != nil {
+		log.Fatalf("Parse error: %v", err)
+	}
 	log.Debugf("* program=%+v", program)
 
 	log.Info("* start evaluation")
 	ev := rv32iasm.NewEvaluator()
-	err := ev.EvaluateProgram(program)
+	err = ev.EvaluateProgram(program)
 	if err != nil {
-		panic(nil)
+		log.Fatalf("EvaluateProgram error: %v", err)
 	}
 
 	emu := rv32i.NewEmulator()
