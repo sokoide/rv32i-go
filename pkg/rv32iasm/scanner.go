@@ -156,22 +156,24 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return LUI
 	case "auipc":
 		return AUIPC
-	case "addi":
-		return ADDI
-	case "li":
-		return LI
-	case "srli":
-		return SRLI
-	case "add":
-		return ADD
-	case "lw":
-		return LW
-	case "sw":
-		return SW
 	case "jal":
 		return JAL
 	case "jalr":
 		return JALR
+	case "lw":
+		return LW
+	case "sw":
+		return SW
+	case "addi":
+		return ADDI
+	case "li":
+		return LI
+	case "andi":
+		return ANDI
+	case "srli":
+		return SRLI
+	case "add":
+		return ADD
 	case "ret":
 		return RET
 	default:

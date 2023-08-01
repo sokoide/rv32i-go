@@ -164,6 +164,9 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpAddi:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (uint32(op1) << 7) | 0b0010011
 		return code
+	case OpAndi:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b111 << 12) | (uint32(op1) << 7) | 0b0010011
+		return code
 	case OpSrli:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0010011
 		return code

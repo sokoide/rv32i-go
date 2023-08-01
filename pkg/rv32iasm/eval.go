@@ -111,6 +111,9 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
 			}, true
 		}
+	case "andi":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpAndi, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "srli":
 		// op1: rd, op2: rs1: op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpSrli, stmt.op1, stmt.op2, stmt.op3)}, true
