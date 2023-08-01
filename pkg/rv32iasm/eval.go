@@ -96,7 +96,7 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 		// op1: rd, op2: offset, op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpJalr, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "addi":
-		// op1: rd, op2: rs1: op3: imm
+		// op1: rd, op2: rs1, op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "li":
 		// op1: rd, op2: imm
@@ -111,6 +111,12 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
 			}, true
 		}
+	case "sltiu":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "seqz":
+		// op1: rd, op2: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, 1)}, true
 	case "andi":
 		// op1: rd, op2: rs1: op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAndi, stmt.op1, stmt.op2, stmt.op3)}, true

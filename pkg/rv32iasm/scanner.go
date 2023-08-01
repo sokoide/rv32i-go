@@ -168,6 +168,10 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return ADDI
 	case "li":
 		return LI
+	case "sltiu":
+		return SLTIU
+	case "seqz":
+		return SEQZ
 	case "andi":
 		return ANDI
 	case "srli":

@@ -22,12 +22,12 @@ func chkerr(err error) {
 %type<program> program
 %type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
 %type<stmt> lw_stmt sw_stmt
-%type<stmt> addi_stmt li_stmt andi_stmt srli_stmt
+%type<stmt> addi_stmt li_stmt sltiu_stmt andi_stmt srli_stmt seqz_stmt
 %type<stmt> add_stmt sub_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI JAL JALR RET LW SW ADDI LI ANDI SRLI
+%token<tok> REGISTER AUIPC LUI JAL JALR RET LW SW ADDI LI SLTIU SEQZ ANDI SRLI
 %token<tok> ADD SUB
 
 
@@ -66,6 +66,8 @@ stmt: /* empty */ {
     | sw_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
+    | sltiu_stmt { $$ = $1 }
+    | seqz_stmt { $$ = $1 }
     | andi_stmt { $$ = $1 }
     | srli_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
@@ -184,6 +186,27 @@ li_stmt: LI REGISTER COMMA NUMBER {
             opcode: $1.lit,
             op1: regs[$2.lit],
             op2: val,
+        }
+    }
+
+sltiu_stmt: SLTIU REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* sltiu_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: regs[$4.lit],
+            op3: val,
+        }
+    }
+
+seqz_stmt: SEQZ REGISTER COMMA REGISTER {
+        log.Debugf("* seqz_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: regs[$4.lit],
         }
     }
 
