@@ -73,6 +73,28 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "auipc":
 		// op1: rd, op2: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAuipc, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "jal":
+		if stmt.str1 == "" {
+			// op1: rd, op2: offset
+			return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, stmt.op2, stmt.op3)}, true
+		} else {
+			// op1: label
+			// if the labels is located  +/- 1KB from regx, use 'jalr regx, imm'
+			// or, if the absolute address is <512KB from regx, use 'jal regx, imm'
+			// otherwise, insert auipc and jal
+			// to simplify, the assembler always uses 'jal x0, imm' assuming the target is
+			// located between 0x0000 and 0x80000 (512KB)
+			if val, ok := e.labels[stmt.str1]; ok {
+				imm := val - e.PC
+				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, imm, 0)}, true
+			} else {
+				e.linksToResolve[e.PC] = stmt.str1
+				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, 0, 0)}, true
+			}
+		}
+	case "jalr":
+		// op1: rd, op2: offset, op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpJalr, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "addi":
 		// op1: rd, op2: rs1: op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
@@ -101,28 +123,6 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "sw":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpSw, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "jal":
-		if stmt.str1 == "" {
-			// op1: rd, op2: offset
-			return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, stmt.op2, stmt.op3)}, true
-		} else {
-			// op1: label
-			// if the labels is located  +/- 1KB from regx, use 'jalr regx, imm'
-			// or, if the absolute address is <512KB from regx, use 'jal regx, imm'
-			// otherwise, insert auipc and jal
-			// to simplify, the assembler always uses 'jal x0, imm' assuming the target is
-			// located between 0x0000 and 0x80000 (512KB)
-			if val, ok := e.labels[stmt.str1]; ok {
-				imm := val - e.PC
-				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, imm, 0)}, true
-			} else {
-				e.linksToResolve[e.PC] = stmt.str1
-				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, 0, 0)}, true
-			}
-		}
-	case "jalr":
-		// op1: rd, op2: offset, op3: rs1
-		return []uint32{rv32i.GenCode(rv32i.OpJalr, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "label":
 		e.labels[stmt.str1] = e.PC
 		return []uint32{0}, false

@@ -57,14 +57,14 @@ stmt: /* empty */ {
     }
     | lui_stmt { $$ = $1 }
     | auipc_stmt { $$ = $1 }
+    | jal_stmt { $$ = $1 }
+    | ret_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
     | srli_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
     | lw_stmt { $$ = $1 }
     | sw_stmt { $$ = $1 }
-    | jal_stmt { $$ = $1 }
-    | ret_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
         log.Debugf("* stmt expr %v", $$)
@@ -92,6 +92,46 @@ auipc_stmt: AUIPC REGISTER COMMA NUMBER {
             opcode: $1.lit,
             op1: regs[$2.lit],
             op2: val,
+        }
+    }
+
+jal_stmt: JAL REGISTER COMMA NUMBER {
+        log.Debugf("* jal_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+        }
+    }
+    | JAL IDENT {
+        log.Debugf("* jal_stmt (label): %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            str1: $2.lit,
+        }
+    }
+
+jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
+        log.Debugf("* jalr_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+			op3: regs[$6.lit],
+        }
+    }
+
+ret_stmt: RET {
+        log.Debugf("* ret_stmt")
+        $$ = &statement{
+            opcode: "jalr",
+            op1: 0,
+            op2: 0,
+            op3: 1,
         }
     }
 
@@ -161,46 +201,6 @@ sw_stmt: SW REGISTER COMMA NUMBER LP REGISTER RP {
             op1: regs[$2.lit],
             op2: val,
             op3: regs[$6.lit],
-        }
-    }
-
-jal_stmt: JAL REGISTER COMMA NUMBER {
-        log.Debugf("* jal_stmt: %+v", $1)
-        val, err := strconv.Atoi($4.lit)
-        chkerr(err)
-        $$ = &statement{
-            opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: val,
-        }
-    }
-    | JAL IDENT {
-        log.Debugf("* jal_stmt (label): %+v", $1)
-        $$ = &statement{
-            opcode: $1.lit,
-            str1: $2.lit,
-        }
-    }
-
-jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
-        log.Debugf("* jalr_stmt: %+v", $1)
-        val, err := strconv.Atoi($4.lit)
-        chkerr(err)
-        $$ = &statement{
-            opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: val,
-			op3: regs[$6.lit],
-        }
-    }
-
-ret_stmt: RET {
-        log.Debugf("* ret_stmt")
-        $$ = &statement{
-            opcode: "jalr",
-            op1: 0,
-            op2: 0,
-            op3: 1,
         }
     }
 
