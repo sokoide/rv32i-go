@@ -44,7 +44,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 	// dumps
 	log.Debug("Labels)")
 	for key, val := range e.labels {
-		log.Debugf("%16s: 0x%08x", key, val)
+		log.Debugf("%-16s: 0x%08x", key, val)
 	}
 	log.Debug("Code)")
 	for idx, code := range e.Code {

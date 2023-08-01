@@ -34,6 +34,7 @@ riscv32_boot:
 	addi	sp, sp, -16
 	li ra, 1
 	jal boot
+_out:
 	ret`
 
 	log.Tracef("src: %s", src)
