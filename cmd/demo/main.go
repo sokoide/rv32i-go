@@ -51,7 +51,12 @@ func main() {
 	err = emu.Load("./data/sample-binary-003.bin")
 	chkerr(err)
 
-	// emu.Run()
+	log.Info("*** code ***")
+	for i := 0; i < 0x108; i += 4 {
+		log.Infof("0x%08x: 0x%02x%02x%02x%02x,", i, emu.Memory[i+3], emu.Memory[i+2], emu.Memory[i+1], emu.Memory[i])
+	}
+	log.Info("*** code end ***")
+
 	emu.StepUntil(0x18)
 	emu.Dump()
 	emu.StepUntil(0x1c)

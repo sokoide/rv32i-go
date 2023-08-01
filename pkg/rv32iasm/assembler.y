@@ -21,13 +21,13 @@ func chkerr(err error) {
 
 %type<program> program
 %type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
-%type<stmt> lw_stmt sw_stmt
+%type<stmt> lw_stmt lbu_stmt sb_stmt sh_stmt sw_stmt
 %type<stmt> addi_stmt li_stmt sltiu_stmt andi_stmt srli_stmt seqz_stmt
 %type<stmt> add_stmt sub_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI JAL JALR RET LW SW ADDI LI SLTIU SEQZ ANDI SRLI
+%token<tok> REGISTER AUIPC LUI JAL JALR RET LW LBU SB SH SW ADDI LI SLTIU SEQZ ANDI SRLI
 %token<tok> ADD SUB
 
 
@@ -64,6 +64,9 @@ stmt: /* empty */ {
     | jalr_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
     | lw_stmt { $$ = $1 }
+    | lbu_stmt { $$ = $1 }
+    | sb_stmt { $$ = $1 }
+    | sh_stmt { $$ = $1 }
     | sw_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
@@ -157,6 +160,42 @@ ret_stmt: RET {
 
 lw_stmt: LW REGISTER COMMA NUMBER LP REGISTER RP {
         log.Debugf("* lw_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+            op3: regs[$6.lit],
+        }
+    }
+
+lbu_stmt: LBU REGISTER COMMA NUMBER LP REGISTER RP {
+        log.Debugf("* lbu_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+            op3: regs[$6.lit],
+        }
+    }
+
+sb_stmt: SB REGISTER COMMA NUMBER LP REGISTER RP {
+        log.Debugf("* sb_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: regs[$2.lit],
+            op2: val,
+            op3: regs[$6.lit],
+        }
+    }
+
+sh_stmt: SH REGISTER COMMA NUMBER LP REGISTER RP {
+        log.Debugf("* sh_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
         chkerr(err)
         $$ = &statement{
