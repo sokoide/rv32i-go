@@ -23,21 +23,39 @@ func main() {
 	li s0, 0 # This is a comment
 	lui a0, 4
 	auipc sp, 1
-	addi sp, sp, -12
-	add sp, sp, a0
+	addi	sp, sp, -12
+	add	sp, sp, a0
 	jal riscv32_boot
-	li ra, -300 # This is never called
-	li a1, 1000000000 # This is never called
-	li a0, 1 # This is never called
-	li a1, 2 # This is never called
-	li a3, 3 # This is never called
+_out:
+	ret
+is_even:
+	addi	sp, sp, -16
+	sw	ra, 12(sp)
+	sw	s0, 8(sp)
+	addi	s0, sp, 16
+	sw	a0, -12(s0)
+	lw	a0, -12(s0)
+	srli	a1, a0, 31
+	add	a1, a0, a1
+	andi	a1, a1, -2
+	sub	a0, a0, a1
+	seqz a0, a0
+	lw	ra, 12(sp)
+	lw	s0, 8(sp)
+	addi	sp, sp, 16
+	ret
 riscv32_boot:
 	addi	sp, sp, -16
 	sw	ra, 12(sp)
-	li ra, 1
-	jal boot
-_out:
-	ret`
+	sw	s0, 8(sp)
+	addi	s0, sp, 16
+	auipc	ra, 0
+	jalr	24(ra)
+	lw	ra, 12(sp)
+	lw	s0, 8(sp)
+	addi	sp, sp, 16
+	ret
+`
 
 	log.Tracef("src: %s", src)
 

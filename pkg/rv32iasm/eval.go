@@ -79,17 +79,12 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 			return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, stmt.op2, stmt.op3)}, true
 		} else {
 			// op1: label
-			// if the labels is located  +/- 1KB from regx, use 'jalr regx, imm'
-			// or, if the absolute address is <512KB from regx, use 'jal regx, imm'
-			// otherwise, insert auipc and jal
-			// to simplify, the assembler always uses 'jal x0, imm' assuming the target is
-			// located between 0x0000 and 0x80000 (512KB)
 			if val, ok := e.labels[stmt.str1]; ok {
 				imm := val - e.PC
-				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, imm, 0)}, true
+				return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, imm, 0)}, true
 			} else {
 				e.linksToResolve[e.PC] = stmt.str1
-				return []uint32{rv32i.GenCode(rv32i.OpJal, 0, 0, 0)}, true
+				return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, 0, 0)}, true
 			}
 		}
 	case "jalr":
@@ -147,10 +142,19 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 }
 
 func (e *Evaluator) resolveLinks() error {
+	// if the label is located +/-512KB from regx, use 'jal regx, imm'
+	// TODO: otherwise, insert auipc and jal
+	// To simplify, the assembler always uses 'jal x1, imm' assuming the target is
+	// located between 0x0000 and 0x80000 (512KB)
 	for PC, label := range e.linksToResolve {
 		if val, ok := e.labels[label]; ok {
-			imm := val
-			e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, 0, imm, 0)
+			if rv32i.Abs(val-PC) <= 512*1024 {
+				imm := val - PC
+				rd := int((e.Code[PC/4] >> 7) & 0x11111)
+				e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, rd, imm, 0)
+			} else {
+				return fmt.Errorf("label %s is too far! PC:%x, %s:%x", label, PC, label, val)
+			}
 		} else {
 			return fmt.Errorf("label %s not found", label)
 		}

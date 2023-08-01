@@ -25,6 +25,13 @@ func byteString2u8(b byte) uint8 {
 	}
 }
 
+const intSize = 32 << (^uint(0) >> 63)
+
+func Abs(v int) int {
+	y := v >> (intSize - 1)
+	return (v ^ y) - y
+}
+
 func chkerr(err error) {
 	if err != nil {
 		panic(err)

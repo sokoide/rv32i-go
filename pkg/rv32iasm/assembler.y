@@ -61,6 +61,7 @@ stmt: /* empty */ {
     | lui_stmt { $$ = $1 }
     | auipc_stmt { $$ = $1 }
     | jal_stmt { $$ = $1 }
+    | jalr_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
     | lw_stmt { $$ = $1 }
     | sw_stmt { $$ = $1 }
@@ -116,6 +117,7 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
         log.Debugf("* jal_stmt (label): %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
+            op1: 1, // if rd is omitted, defaults to x1
             str1: $2.lit,
         }
     }
@@ -129,6 +131,17 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
             op1: regs[$2.lit],
             op2: val,
 			op3: regs[$6.lit],
+        }
+    }
+    | JALR NUMBER LP REGISTER RP {
+        log.Debugf("* jalr_stmt: %+v", $1)
+        val, err := strconv.Atoi($2.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: 1,
+            op2: val,
+			op3: regs[$4.lit],
         }
     }
 
