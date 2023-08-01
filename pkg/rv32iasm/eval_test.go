@@ -17,6 +17,9 @@ func Test_EvaluateProgram(t *testing.T) {
 	jal riscv32_boot
 _out:
 	ret
+is_even:
+	addi	sp, sp, -16
+	sw	ra, 12(sp)
 riscv32_boot:
 `
 
@@ -36,7 +39,9 @@ riscv32_boot:
 	wants := []uint32{
 		// TODO: after moving riscv32_boot to the right place
 		// 0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x044000ef, 0x00008067,
-		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0200006f, 0x00008067,
+		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0280006f,
+		0x00008067,
+		0xff010113, 0x00112623,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

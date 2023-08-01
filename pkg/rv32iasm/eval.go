@@ -28,7 +28,7 @@ func (e *Evaluator) Reset() {
 }
 
 func (e *Evaluator) EvaluateProgram(prog *Program) error {
-	log.Infof("EvaluateProgram: stmt=%d", len(prog.statements))
+	log.Debugf("EvaluateProgram: stmt=%d", len(prog.statements))
 	e.Reset()
 
 	for idx, stmt := range prog.statements {
@@ -92,6 +92,9 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "add":
 		// op1: rd, op2: rs1: op3: rs2
 		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sw":
+		// op1: rs2, op2: offset: op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpSw, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "jal":
 		if stmt.str1 == "" {
 			// op1: rd, op2: offset

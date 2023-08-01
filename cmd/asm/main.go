@@ -33,6 +33,7 @@ func main() {
 	li a3, 3 # This is never called
 riscv32_boot:
 	addi	sp, sp, -16
+	sw	ra, 12(sp)
 	li ra, 1
 	jal boot
 _out:
