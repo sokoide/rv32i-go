@@ -8,18 +8,25 @@ import (
 func Test_EvaluateProgram(t *testing.T) {
 	src := `boot:
 # This is a comment line
-	li ra, 0
-	li s0, 0 # This is a comment
-	lui a0, 4
-	auipc sp, 1
-	addi	sp, sp, -12
-	add	sp, sp, a0
-	jal riscv32_boot
+	li ra, 0 #0
+	li s0, 0 #1 This is a comment
+	lui a0, 4 #2
+	auipc sp, 1 #3
+	addi	sp, sp, -12 #4
+	add	sp, sp, a0 #5
+	jal riscv32_boot #6
 _out:
-	ret
+	ret #7
 is_even:
-	addi	sp, sp, -16
-	sw	ra, 12(sp)
+	addi	sp, sp, -16 #8
+	sw	ra, 12(sp) #9
+	sw	s0, 8(sp) #10
+	addi	s0, sp, 16 #11
+	sw	a0, -12(s0) #12
+	lw	a0, -12(s0) #13
+	srli	a1, a0, 31 #14
+	add	a1, a0, a1 #15
+
 riscv32_boot:
 `
 
@@ -39,9 +46,9 @@ riscv32_boot:
 	wants := []uint32{
 		// TODO: after moving riscv32_boot to the right place
 		// 0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x044000ef, 0x00008067,
-		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0280006f,
+		0x00000093, 0x00000413, 0x00004537, 0x00001117, 0xff410113, 0x00a10133, 0x0400006f,
 		0x00008067,
-		0xff010113, 0x00112623,
+		0xff010113, 0x00112623, 0x00812423, 0x01010413, 0xfea42a23, 0xff442503, 0x01f55593, 0x00b505b3, //0xffe5f593,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

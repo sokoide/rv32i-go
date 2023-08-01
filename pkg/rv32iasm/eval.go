@@ -89,9 +89,15 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
 			}, true
 		}
+	case "srli":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSrli, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "add":
 		// op1: rd, op2: rs1: op3: rs2
 		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "lw":
+		// op1: rs2, op2: offset: op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpLw, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "sw":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpSw, stmt.op1, stmt.op2, stmt.op3)}, true

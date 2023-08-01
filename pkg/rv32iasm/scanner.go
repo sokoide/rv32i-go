@@ -160,8 +160,12 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return ADDI
 	case "li":
 		return LI
+	case "srli":
+		return SRLI
 	case "add":
 		return ADD
+	case "lw":
+		return LW
 	case "sw":
 		return SW
 	case "jal":
