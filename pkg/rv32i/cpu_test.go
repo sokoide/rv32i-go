@@ -380,6 +380,15 @@ func Test_Execute(t *testing.T) {
 		t.Errorf("Wrong PC %x", cpu.PC)
 	}
 
+	// TODO: Lb --------------------
+	// TODO: Lh --------------------
+	// TODO: Lw --------------------
+	// TODO: Lbu --------------------
+	// TODO: Lhu --------------------
+	// TODO: Sb --------------------
+	// TODO: Sh --------------------
+	// TODO: Sw --------------------
+
 	// Addi --------------------
 	cpu.Reset()
 	code = GenCode(OpAddi, 10, 0, 42)
@@ -734,4 +743,64 @@ func Test_Execute(t *testing.T) {
 	if cpu.X[1] != 0 {
 		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
 	}
+
+	// Xor --------------------
+	cpu.Reset()
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	cpu.X[4] = 0b11110000_11110000_11110000_11110000
+	code = GenCode(OpXor, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b00111100_00111100_00111100_00111100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	// Srl --------------------
+	cpu.Reset()
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	cpu.X[4] = 8
+	code = GenCode(OpSrl, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b00000000_11001100_11001100_11001100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	// only the lower 5bits are used -> 4 bit shift
+	cpu.X[4] = 0b11111111_11111111_11111111_00000100
+	code = GenCode(OpSrl, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b00001100_11001100_11001100_11001100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	// Sra --------------------
+	cpu.Reset()
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	cpu.X[4] = 8
+	code = GenCode(OpSra, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b11111111_11001100_11001100_11001100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0b10001100_11001100_11001100_11001100
+	// only the lower 5bits are used -> 4 bit shift
+	cpu.X[4] = 0b11111111_11111111_11111111_00000100
+	code = GenCode(OpSra, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b11111000_11001100_11001100_11001100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+	// TODO: Or --------------------
+	// TODO: And --------------------
 }

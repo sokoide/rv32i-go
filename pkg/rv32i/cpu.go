@@ -322,14 +322,16 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		// logical shift
 		log.Tracef("srl: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
-			c.X[i.Rd] = c.X[i.Rs1] >> c.X[i.Rs2]
+			shamt := 0b11111 & c.X[i.Rs2]
+			c.X[i.Rd] = c.X[i.Rs1] >> shamt
 		}
 	case OpSra:
 		// arithmetic shift
 		log.Tracef("sra: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
-		data := c.X[i.Rs1] >> c.X[i.Rs2]
+		shamt := 0b11111 & c.X[i.Rs2]
+		data := c.X[i.Rs1] >> shamt
 		if i.Rd > 0 {
-			c.X[i.Rd] = SignExtension(data, 31-int(c.X[i.Rs2]))
+			c.X[i.Rd] = SignExtension(data, 31-int(shamt))
 		}
 	case OpOr:
 		log.Tracef("or: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)

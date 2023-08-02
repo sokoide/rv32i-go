@@ -198,6 +198,27 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpBgeu:
 		code = GetCodeBase("B", op1, op2, op3) | (0b111 << 12)
 		return code
+	case OpLw:
+		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (uint32(op1) << 7) | 0b0000011
+		return code
+	case OpLbu:
+		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b100 << 12) | (uint32(op1) << 7) | 0b0000011
+		return code
+	case OpSb:
+		imm115 := (uint32(op2) >> 5) & 0b1111111
+		imm40 := uint32(op2) & 0b11111
+		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b000 << 12) | (imm40 << 7) | 0b0100011
+		return code
+	case OpSh:
+		imm115 := (uint32(op2) >> 5) & 0b1111111
+		imm40 := uint32(op2) & 0b11111
+		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b001 << 12) | (imm40 << 7) | 0b0100011
+		return code
+	case OpSw:
+		imm115 := (uint32(op2) >> 5) & 0b1111111
+		imm40 := uint32(op2) & 0b11111
+		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (imm40 << 7) | 0b0100011
+		return code
 	case OpAddi:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (uint32(op1) << 7) | 0b0010011
 		return code
@@ -243,26 +264,20 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpSltu:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b011 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
-	case OpLw:
-		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (uint32(op1) << 7) | 0b0000011
+	case OpXor:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b100 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
-	case OpLbu:
-		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b100 << 12) | (uint32(op1) << 7) | 0b0000011
+	case OpSrl:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
-	case OpSb:
-		imm115 := (uint32(op2) >> 5) & 0b1111111
-		imm40 := uint32(op2) & 0b11111
-		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b000 << 12) | (imm40 << 7) | 0b0100011
+	case OpSra:
+		code = (0b1 << 30) | (uint32(op3) << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
-	case OpSh:
-		imm115 := (uint32(op2) >> 5) & 0b1111111
-		imm40 := uint32(op2) & 0b11111
-		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b001 << 12) | (imm40 << 7) | 0b0100011
+	case OpOr:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b110 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
-	case OpSw:
-		imm115 := (uint32(op2) >> 5) & 0b1111111
-		imm40 := uint32(op2) & 0b11111
-		code := (imm115 << 25) | (uint32(op1) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (imm40 << 7) | 0b0100011
+	case OpAnd:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b111 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
 	// TODO:
 	default:
