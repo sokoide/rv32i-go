@@ -4,6 +4,7 @@ import "testing"
 
 func Test_Execute(t *testing.T) {
 	var code uint32
+	var got uint32
 	var instr *Instruction
 	var inc bool
 
@@ -382,6 +383,7 @@ func Test_Execute(t *testing.T) {
 
 	// Lb --------------------
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 3
 	cpu.Emu.Memory[43] = 1
 	code = GenCode(OpLb, 10, 42, 0) // x10 <- 42(x0)
@@ -394,6 +396,7 @@ func Test_Execute(t *testing.T) {
 
 	cpu.Reset()
 	cpu.X[1] = 100
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[142] = 4
 	cpu.Emu.Memory[143] = 1
 	code = GenCode(OpLb, 10, 42, 1) // x10 <- 42(x1)
@@ -405,6 +408,7 @@ func Test_Execute(t *testing.T) {
 	}
 
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 0xff
 	cpu.Emu.Memory[43] = 1
 	code = GenCode(OpLb, 10, 42, 0) // x10 <- 42(x0)
@@ -417,6 +421,7 @@ func Test_Execute(t *testing.T) {
 
 	// Lh --------------------
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 3
 	cpu.Emu.Memory[43] = 1
 	cpu.Emu.Memory[44] = 1
@@ -429,6 +434,7 @@ func Test_Execute(t *testing.T) {
 	}
 
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 0xff
 	cpu.Emu.Memory[43] = 0xff
 	code = GenCode(OpLh, 10, 42, 0) // x10 <- 42(x0)
@@ -441,6 +447,7 @@ func Test_Execute(t *testing.T) {
 
 	// Lw --------------------
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.X[1] = 100
 	cpu.Emu.Memory[142] = 3
 	cpu.Emu.Memory[143] = 1
@@ -455,6 +462,7 @@ func Test_Execute(t *testing.T) {
 	}
 
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 0xff
 	cpu.Emu.Memory[43] = 0xff
 	cpu.Emu.Memory[44] = 0xff
@@ -469,6 +477,7 @@ func Test_Execute(t *testing.T) {
 
 	// Lbu --------------------
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 0xff
 	cpu.Emu.Memory[43] = 0
 	code = GenCode(OpLbu, 10, 42, 0) // x10 <- 42(x0)
@@ -481,6 +490,7 @@ func Test_Execute(t *testing.T) {
 
 	// Lhu --------------------
 	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
 	cpu.Emu.Memory[42] = 0xff
 	cpu.Emu.Memory[43] = 0xff
 	cpu.Emu.Memory[44] = 0
@@ -491,9 +501,57 @@ func Test_Execute(t *testing.T) {
 	if cpu.X[10] != 0x0000ffff {
 		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
 	}
-	// TODO: Sb --------------------
-	// TODO: Sh --------------------
-	// TODO: Sw --------------------
+
+	// Sb --------------------
+	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
+	cpu.X[10] = 0x11223344
+	code = GenCode(OpSb, 10, 42, 0) // 42(x0) <- x10
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	got = uint32(cpu.Emu.Memory[42]) | (uint32(cpu.Emu.Memory[43]) << 8) | (uint32(cpu.Emu.Memory[44]) << 16) | (uint32(cpu.Emu.Memory[45]) << 24)
+	if got != 0x44 {
+		t.Errorf("Wrong memory 0x%08x", got)
+	}
+
+	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
+	cpu.X[1] = 100
+	cpu.X[10] = 0x11223344
+	code = GenCode(OpSb, 10, 42, 1) // 42(x1) <- x10
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	got = uint32(cpu.Emu.Memory[142]) | (uint32(cpu.Emu.Memory[143]) << 8) | (uint32(cpu.Emu.Memory[144]) << 16) | (uint32(cpu.Emu.Memory[145]) << 24)
+	if got != 0x44 {
+		t.Errorf("Wrong memory 0x%08x", got)
+	}
+
+	// Sh --------------------
+	cpu.Reset()
+	cpu.Emu.Memory = make([]uint8, MaxMemory)
+	cpu.X[10] = 0x11223344
+	code = GenCode(OpSh, 10, 42, 0) // 42(x0) <- x10
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	got = uint32(cpu.Emu.Memory[42]) | (uint32(cpu.Emu.Memory[43]) << 8) | (uint32(cpu.Emu.Memory[44]) << 16) | (uint32(cpu.Emu.Memory[45]) << 24)
+	if got != 0x3344 {
+		t.Errorf("Wrong memory 0x%08x", got)
+	}
+
+	// Sw --------------------
+	cpu.Reset()
+	cpu.X[10] = 0x11223344
+	code = GenCode(OpSw, 10, 42, 0) // 42(x0) <- x10
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	got = uint32(cpu.Emu.Memory[42]) | (uint32(cpu.Emu.Memory[43]) << 8) | (uint32(cpu.Emu.Memory[44]) << 16) | (uint32(cpu.Emu.Memory[45]) << 24)
+	if got != 0x11223344 {
+		t.Errorf("Wrong memory 0x%08x", got)
+	}
 
 	// Addi --------------------
 	cpu.Reset()
