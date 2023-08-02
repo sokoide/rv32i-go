@@ -198,7 +198,7 @@ func Test_Execute(t *testing.T) {
 	cpu.PC = 0x50
 	cpu.X[3] = 0x1000
 	cpu.X[4] = 0x1010
-	code = GenCode(OpBne, 3, 4, 1024)
+	code = GenCode(OpBlt, 3, 4, 1024)
 	instr = NewInstruction(code)
 
 	inc = cpu.Execute(instr)
@@ -209,12 +209,167 @@ func Test_Execute(t *testing.T) {
 		t.Errorf("Wrong PC %x", cpu.PC)
 	}
 
-	cpu.Reset()
+	// lt - signed negative
+	cpu.PC = 0x50
+	cpu.X[3] = 0xffffffff
+	cpu.X[4] = 0x1010
+	code = GenCode(OpBlt, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != false {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50+1024 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
 	// not lt
 	cpu.PC = 0x50
 	cpu.X[3] = 0x1000
 	cpu.X[4] = 0x1000
-	code = GenCode(OpBne, 3, 4, 1024)
+	code = GenCode(OpBlt, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != true {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// Bge --------------------
+	cpu.Reset()
+	// ge
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1000
+	code = GenCode(OpBge, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != false {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50+1024 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// not ge - signed negative
+	cpu.PC = 0x50
+	cpu.X[3] = 0xffffffff
+	cpu.X[4] = 0x1000
+	code = GenCode(OpBge, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != true {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// not ge
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1010
+	code = GenCode(OpBge, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != true {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// Bltu --------------------
+	cpu.Reset()
+	// lt
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1010
+	code = GenCode(OpBltu, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != false {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50+1024 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// not lt - unsigned
+	cpu.PC = 0x50
+	cpu.X[3] = 0xffffffff
+	cpu.X[4] = 0x1010
+	code = GenCode(OpBltu, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != true {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// not lt
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1000
+	code = GenCode(OpBltu, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != true {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// Bgeu --------------------
+	cpu.Reset()
+	// ge
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1000
+	code = GenCode(OpBgeu, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != false {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50+1024 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// ge - unsigned negative
+	cpu.PC = 0x50
+	cpu.X[3] = 0xffffffff
+	cpu.X[4] = 0x1000
+	code = GenCode(OpBgeu, 3, 4, 1024)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if inc != false {
+		t.Error("Wrong inc")
+	}
+	if cpu.PC != 0x50+1024 {
+		t.Errorf("Wrong PC %x", cpu.PC)
+	}
+
+	// not ge
+	cpu.PC = 0x50
+	cpu.X[3] = 0x1000
+	cpu.X[4] = 0x1010
+	code = GenCode(OpBgeu, 3, 4, 1024)
 	instr = NewInstruction(code)
 
 	inc = cpu.Execute(instr)

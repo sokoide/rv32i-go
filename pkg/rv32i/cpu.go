@@ -130,8 +130,8 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		}
 	case OpBlt:
 		// signed comparison
-		a := int32(i.Rs1)
-		b := int32(i.Rs2)
+		a := int32(c.X[i.Rs1])
+		b := int32(c.X[i.Rs2])
 		log.Tracef("blt: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a < b {
 			c.PC += i.Imm
@@ -139,8 +139,8 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		}
 	case OpBge:
 		// signed comparison
-		a := int32(i.Rs1)
-		b := int32(i.Rs2)
+		a := int32(c.X[i.Rs1])
+		b := int32(c.X[i.Rs2])
 		log.Tracef("bge: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a >= b {
 			c.PC += i.Imm

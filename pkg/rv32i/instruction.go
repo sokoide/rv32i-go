@@ -140,6 +140,28 @@ func NewInstruction(instr uint32) *Instruction {
 	return &instance
 }
 
+func GetCodeBase(t string, op1 int, op2 int, op3 int) uint32 {
+	var code uint32
+	switch t {
+	case "J":
+		imm20 := (uint32(op2) >> 20) & 0b1
+		imm101 := (uint32(op2) >> 1) & 0b11_11111111
+		imm11 := (uint32(op2) >> 11) & 0b1
+		imm1912 := (uint32(op2) >> 12) & 0b11111111
+		offset := imm20<<19 | imm101<<9 | imm11<<8 | imm1912
+		code = offset<<12 | (uint32(op1) << 7) | 0b1101111
+	case "B":
+		imm12 := (uint32(op3) >> 12) & 0b1
+		imm105 := (uint32(op3) >> 5) & 0b111111
+		imm41 := (uint32(op3) >> 1) & 0b1111
+		imm11 := (uint32(op3) >> 11) & 0b1
+		code = imm12<<31 | imm105<<25 | (uint32(op2) << 20) | (uint32(op1) << 15) | (0b000 << 12) | (imm41 << 8) | (imm11 << 7) | 0b1100011
+	default:
+		panic(fmt.Sprintf("Type %s not supported", t))
+	}
+	return code
+}
+
 func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	var code uint32
 	switch opn {
@@ -150,30 +172,29 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 		code = (uint32(op2) << 12) | (uint32(op1) << 7) | 0b0010111
 		return code
 	case OpJal:
-		imm20 := (uint32(op2) >> 20) & 0b1
-		imm101 := (uint32(op2) >> 1) & 0b11_11111111
-		imm11 := (uint32(op2) >> 11) & 0b1
-		imm1912 := (uint32(op2) >> 12) & 0b11111111
-		offset := imm20<<19 | imm101<<9 | imm11<<8 | imm1912
-		code = offset<<12 | (uint32(op1) << 7) | 0b1101111
+		code = GetCodeBase("J", op1, op2, op3)
 		return code
 	case OpJalr:
 		offset := (uint32(op2) & 0b1111_11111111)
 		code = offset<<20 | (uint32(op3) << 15) | (uint32(op1) << 7) | 0b1100111
 		return code
 	case OpBeq:
-		imm12 := (uint32(op3) >> 12) & 0b1
-		imm105 := (uint32(op3) >> 5) & 0b111111
-		imm41 := (uint32(op3) >> 1) & 0b1111
-		imm11 := (uint32(op3) >> 11) & 0b1
-		code = imm12<<31 | imm105<<25 | (uint32(op2) << 20) | (uint32(op1) << 15) | (0b000 << 12) | (imm41 << 8) | (imm11 << 7) | 0b1100011
+		code = GetCodeBase("B", op1, op2, op3) | (0b000 << 12)
 		return code
 	case OpBne:
-		imm12 := (uint32(op3) >> 12) & 0b1
-		imm105 := (uint32(op3) >> 5) & 0b111111
-		imm41 := (uint32(op3) >> 1) & 0b1111
-		imm11 := (uint32(op3) >> 11) & 0b1
-		code = imm12<<31 | imm105<<25 | (uint32(op2) << 20) | (uint32(op1) << 15) | (0b001 << 12) | (imm41 << 8) | (imm11 << 7) | 0b1100011
+		code = GetCodeBase("B", op1, op2, op3) | (0b001 << 12)
+		return code
+	case OpBlt:
+		code = GetCodeBase("B", op1, op2, op3) | (0b100 << 12)
+		return code
+	case OpBge:
+		code = GetCodeBase("B", op1, op2, op3) | (0b101 << 12)
+		return code
+	case OpBltu:
+		code = GetCodeBase("B", op1, op2, op3) | (0b110 << 12)
+		return code
+	case OpBgeu:
+		code = GetCodeBase("B", op1, op2, op3) | (0b111 << 12)
 		return code
 	case OpAddi:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (uint32(op1) << 7) | 0b0010011
