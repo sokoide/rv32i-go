@@ -13,6 +13,16 @@ func SignExtension(imm uint32, digit int) uint32 {
 	return imm
 }
 
+func InterpretSingnedUint32(imm uint32) int {
+	sign := (imm >> 31) & 0b1
+	if sign == 1 {
+		x := 0xffffffff ^ imm
+		x++
+		return int(x) * -1
+	}
+	return int(imm)
+}
+
 func byteString2u8(b byte) uint8 {
 	if b >= '0' && b <= '9' {
 		return b - '0'

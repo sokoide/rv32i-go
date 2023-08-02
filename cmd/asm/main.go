@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/sokoide/rv32i-go/pkg/rv32i"
 	"github.com/sokoide/rv32i-go/pkg/rv32iasm"
 )
 
@@ -109,7 +108,4 @@ main:
 	if err != nil {
 		log.Fatalf("EvaluateProgram error: %v", err)
 	}
-
-	emu := rv32i.NewEmulator()
-	emu.Reset()
 }

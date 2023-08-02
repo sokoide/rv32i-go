@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"strings"
+
+	"github.com/sokoide/rv32i-go/pkg/rv32i"
 )
 
 type Scanner struct {
@@ -147,7 +149,7 @@ func (s *Scanner) scanIdentifier() string {
 }
 
 func (s *Scanner) tokFromLit(lit string) int {
-	if _, ok := regs[lit]; ok {
+	if _, ok := rv32i.Regs[lit]; ok {
 		return REGISTER
 	}
 

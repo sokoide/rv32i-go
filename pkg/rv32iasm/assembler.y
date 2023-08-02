@@ -3,6 +3,8 @@ package rv32iasm
 
 import (
     "strconv"
+    "github.com/sokoide/rv32i-go/pkg/rv32i"
+
     log "github.com/sirupsen/logrus"
 )
 func chkerr(err error) {
@@ -90,7 +92,7 @@ lui_stmt: LUI REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
         }
     }
@@ -101,7 +103,7 @@ auipc_stmt: AUIPC REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
         }
     }
@@ -112,7 +114,7 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
         }
     }
@@ -131,9 +133,9 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-			op3: regs[$6.lit],
+			op3: rv32i.Regs[$6.lit],
         }
     }
     | JALR NUMBER LP REGISTER RP {
@@ -144,7 +146,7 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
             opcode: $1.lit,
             op1: 1,
             op2: val,
-			op3: regs[$4.lit],
+			op3: rv32i.Regs[$4.lit],
         }
     }
 
@@ -164,9 +166,9 @@ lw_stmt: LW REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-            op3: regs[$6.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -176,9 +178,9 @@ lbu_stmt: LBU REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-            op3: regs[$6.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -188,9 +190,9 @@ sb_stmt: SB REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-            op3: regs[$6.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -200,9 +202,9 @@ sh_stmt: SH REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-            op3: regs[$6.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -212,9 +214,9 @@ sw_stmt: SW REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
-            op3: regs[$6.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -224,8 +226,8 @@ addi_stmt: ADDI REGISTER COMMA REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
             op3: val,
         }
     }
@@ -236,7 +238,7 @@ li_stmt: LI REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
+            op1: rv32i.Regs[$2.lit],
             op2: val,
         }
     }
@@ -247,8 +249,8 @@ sltiu_stmt: SLTIU REGISTER COMMA REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
             op3: val,
         }
     }
@@ -257,8 +259,8 @@ seqz_stmt: SEQZ REGISTER COMMA REGISTER {
         log.Debugf("* seqz_stmt: %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
         }
     }
 
@@ -268,8 +270,8 @@ andi_stmt: ANDI REGISTER COMMA REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
             op3: val,
         }
 }
@@ -281,8 +283,8 @@ srli_stmt: SRLI REGISTER COMMA REGISTER COMMA NUMBER {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
             op3: val,
         }
     }
@@ -291,9 +293,9 @@ add_stmt: ADD REGISTER COMMA REGISTER COMMA REGISTER {
         log.Debugf("* add_stmt: %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
-            op3: regs[$6.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 
@@ -301,9 +303,9 @@ sub_stmt: SUB REGISTER COMMA REGISTER COMMA REGISTER {
         log.Debugf("* sub_stmt: %+v", $1)
         $$ = &statement{
             opcode: $1.lit,
-            op1: regs[$2.lit],
-            op2: regs[$4.lit],
-            op3: regs[$6.lit],
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
         }
     }
 

@@ -42,14 +42,15 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 		}
 	}
 
-	// dumps
+	// dump
 	log.Debug("Labels)")
 	for key, val := range e.labels {
 		log.Debugf("%-16s: 0x%08x", key, val)
 	}
 	log.Debug("Code)")
 	for idx, code := range e.Code {
-		log.Debugf("0x%08x: 0x%08x", idx*4, code)
+		instr := rv32i.NewInstruction(code)
+		log.Debugf("0x%08x: 0x%08x %s", idx*4, code, instr.GetCodeString())
 	}
 	log.Debug("Links to Resolve)")
 	for key, val := range e.linksToResolve {

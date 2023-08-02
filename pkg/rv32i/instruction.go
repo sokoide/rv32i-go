@@ -1,6 +1,8 @@
 package rv32i
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //go:generate stringer -type InstructionType
 type InstructionType int
@@ -503,5 +505,16 @@ func (i *Instruction) GetOpName() OpName {
 		}
 	default:
 		panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
+	}
+}
+
+func (i *Instruction) GetCodeString() string {
+	switch i.GetInstructionType() {
+	case InstructionTypeR:
+		return fmt.Sprintf("%s %s, %s, %s", i.GetOpName().String()[2:], RegName(i.Rd), RegName(i.Rs1), RegName(i.Rs2))
+	case InstructionTypeI:
+		return fmt.Sprintf("%s %s, %d(%s)", i.GetOpName().String()[2:], RegName(i.Rd), InterpretSingnedUint32(i.Imm), RegName(i.Rs1))
+	default:
+		return i.GetOpName().String()[2:] + "(TBD)"
 	}
 }
