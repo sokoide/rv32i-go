@@ -379,4 +379,66 @@ func Test_Execute(t *testing.T) {
 	if cpu.PC != 0x50 {
 		t.Errorf("Wrong PC %x", cpu.PC)
 	}
+
+	// Addi --------------------
+	cpu.Reset()
+	code = GenCode(OpAddi, 10, 0, 42)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 42 {
+		t.Error("Wrong X10")
+	}
+
+	code = GenCode(OpAddi, 11, 10, 42)
+	instr = NewInstruction(code)
+	inc = cpu.Execute(instr)
+	if cpu.X[11] != 84 {
+		t.Error("Wrong X11")
+	}
+
+	code = GenCode(OpAddi, 11, 10, -41)
+	instr = NewInstruction(code)
+	inc = cpu.Execute(instr)
+	if cpu.X[11] != 1 {
+		t.Error("Wrong X11")
+	}
+	code = GenCode(OpAddi, 11, 10, -44)
+	instr = NewInstruction(code)
+	inc = cpu.Execute(instr)
+	if cpu.X[11] != 0xfffffffe {
+		t.Error("Wrong X11")
+	}
+
+	// Slti --------------------
+	cpu.Reset()
+	cpu.X[3] = 0
+	cpu.X[4] = 100
+	code = GenCode(OpSlti, 3, 4, 101)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 1 {
+		t.Error("Wrong X3")
+	}
+
+	cpu.X[3] = 0
+	cpu.X[4] = 100
+	code = GenCode(OpSlti, 3, 4, 100)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0 {
+		t.Error("Wrong X3")
+	}
+
+	cpu.X[3] = 0
+	cpu.X[4] = 100
+	code = GenCode(OpSlti, 3, 4, -1)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0 {
+		t.Error("Wrong X3")
+	}
 }
