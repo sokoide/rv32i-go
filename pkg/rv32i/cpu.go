@@ -291,7 +291,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		// logical shift
 		log.Tracef("sll: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
-			c.X[i.Rd] = c.X[i.Rs1] << c.X[i.Rs1]
+			c.X[i.Rd] = c.X[i.Rs1] << c.X[i.Rs2]
 		}
 	case OpSlt:
 		// signed comparison
