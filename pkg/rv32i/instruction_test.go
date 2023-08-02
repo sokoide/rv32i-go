@@ -84,3 +84,26 @@ func Test_GetOpName(t *testing.T) {
 		}
 	}
 }
+
+func Test_GenCode(t *testing.T) {
+	type TestData struct {
+		opn  OpName
+		op1  int
+		op2  int
+		op3  int
+		want uint32
+	}
+
+	tds := []TestData{
+		{OpLui, 10, 4, 0, 0x00004537},
+		{OpAuipc, 2, 1, 0, 0x00001117},
+		{OpAddi, 8, 0, 0, 0x00000413},
+	}
+
+	for idx, td := range tds {
+		got := GenCode(td.opn, td.op1, td.op2, td.op3)
+		if got != td.want {
+			t.Errorf("[%d] Wrong code. got: 0x%08x, want: 0x%08x", idx, got, td.want)
+		}
+	}
+}

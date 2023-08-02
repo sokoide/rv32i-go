@@ -120,11 +120,13 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("beq: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] == c.X[i.Rs2] {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpBne:
 		log.Tracef("bne: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] != c.X[i.Rs2] {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpBlt:
 		// signed comparison
@@ -133,6 +135,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("blt: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a < b {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpBge:
 		// signed comparison
@@ -141,18 +144,21 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		log.Tracef("bge: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a >= b {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpBltu:
 		// unsigned comparison
 		log.Tracef("bltu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] < c.X[i.Rs2] {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpBgeu:
 		// unsigned comparison
 		log.Tracef("bgeu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] >= c.X[i.Rs2] {
 			c.PC += i.Imm
+			incrementPC = false
 		}
 	case OpLb:
 		// sign extension

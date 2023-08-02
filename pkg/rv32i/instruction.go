@@ -120,10 +120,10 @@ func NewInstruction(instr uint32) *Instruction {
 		instance.Imm = imm
 	case InstructionTypeB:
 		imm12 := instr >> 31
-		imm1015 := instr >> 25 & 0b111111
+		imm105 := instr >> 25 & 0b111111
 		imm41 := instr >> 8 & 0b1111
 		imm11 := instr >> 7 & 0b1
-		imm = imm12<<12 | imm1015<<10 | imm41<<1 | imm11<<11
+		imm = imm12<<11 | imm105<<5 | imm41<<1 | imm11
 		imm = SignExtension(imm, 12)
 	case InstructionTypeI:
 		imm110 := instr >> 20
@@ -154,12 +154,26 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 		imm101 := (uint32(op2) >> 1) & 0b11_11111111
 		imm11 := (uint32(op2) >> 11) & 0b1
 		imm1912 := (uint32(op2) >> 12) & 0b11111111
-		imm := imm20<<31 | imm101<<21 | imm11<<20 | imm1912<<12
-		code = imm | (uint32(op1) << 7) | 0b1101111
+		offset := imm20<<19 | imm101<<9 | imm11<<8 | imm1912
+		code = offset<<12 | (uint32(op1) << 7) | 0b1101111
 		return code
 	case OpJalr:
-		imm := (uint32(op2) << 20)
-		code = imm | (uint32(op3) << 15) | (uint32(op1) << 7) | 0b1100111
+		offset := (uint32(op2) & 0b1111_11111111)
+		code = offset<<20 | (uint32(op3) << 15) | (uint32(op1) << 7) | 0b1100111
+		return code
+	case OpBeq:
+		imm12 := (uint32(op3) >> 12) & 0b1
+		imm105 := (uint32(op3) >> 5) & 0b111111
+		imm41 := (uint32(op3) >> 1) & 0b1111
+		imm11 := (uint32(op3) >> 11) & 0b1
+		code = imm12<<31 | imm105<<25 | (uint32(op2) << 20) | (uint32(op1) << 15) | (0b000 << 12) | (imm41 << 8) | (imm11 << 7) | 0b1100011
+		return code
+	case OpBne:
+		imm12 := (uint32(op3) >> 12) & 0b1
+		imm105 := (uint32(op3) >> 5) & 0b111111
+		imm41 := (uint32(op3) >> 1) & 0b1111
+		imm11 := (uint32(op3) >> 11) & 0b1
+		code = imm12<<31 | imm105<<25 | (uint32(op2) << 20) | (uint32(op1) << 15) | (0b001 << 12) | (imm41 << 8) | (imm11 << 7) | 0b1100011
 		return code
 	case OpAddi:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (uint32(op1) << 7) | 0b0010011
