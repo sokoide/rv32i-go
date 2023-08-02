@@ -380,11 +380,117 @@ func Test_Execute(t *testing.T) {
 		t.Errorf("Wrong PC %x", cpu.PC)
 	}
 
-	// TODO: Lb --------------------
-	// TODO: Lh --------------------
-	// TODO: Lw --------------------
-	// TODO: Lbu --------------------
-	// TODO: Lhu --------------------
+	// Lb --------------------
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 3
+	cpu.Emu.Memory[43] = 1
+	code = GenCode(OpLb, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 3 {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	cpu.Reset()
+	cpu.X[1] = 100
+	cpu.Emu.Memory[142] = 4
+	cpu.Emu.Memory[143] = 1
+	code = GenCode(OpLb, 10, 42, 1) // x10 <- 42(x1)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 4 {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 0xff
+	cpu.Emu.Memory[43] = 1
+	code = GenCode(OpLb, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0xffffffff {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	// Lh --------------------
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 3
+	cpu.Emu.Memory[43] = 1
+	cpu.Emu.Memory[44] = 1
+	code = GenCode(OpLh, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0x0103 {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 0xff
+	cpu.Emu.Memory[43] = 0xff
+	code = GenCode(OpLh, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0xffffffff {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	// Lw --------------------
+	cpu.Reset()
+	cpu.X[1] = 100
+	cpu.Emu.Memory[142] = 3
+	cpu.Emu.Memory[143] = 1
+	cpu.Emu.Memory[144] = 1
+	cpu.Emu.Memory[145] = 1
+	code = GenCode(OpLw, 10, 42, 1) // x10 <- 42(x1)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0x01010103 {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 0xff
+	cpu.Emu.Memory[43] = 0xff
+	cpu.Emu.Memory[44] = 0xff
+	cpu.Emu.Memory[45] = 0xff
+	code = GenCode(OpLw, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0xffffffff {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	// Lbu --------------------
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 0xff
+	cpu.Emu.Memory[43] = 0
+	code = GenCode(OpLbu, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0x000000ff {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
+
+	// Lhu --------------------
+	cpu.Reset()
+	cpu.Emu.Memory[42] = 0xff
+	cpu.Emu.Memory[43] = 0xff
+	cpu.Emu.Memory[44] = 0
+	code = GenCode(OpLhu, 10, 42, 0) // x10 <- 42(x0)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[10] != 0x0000ffff {
+		t.Errorf("Wrong X10 0x%08x", cpu.X[10])
+	}
 	// TODO: Sb --------------------
 	// TODO: Sh --------------------
 	// TODO: Sw --------------------
@@ -801,6 +907,27 @@ func Test_Execute(t *testing.T) {
 	if cpu.X[1] != 0b11111000_11001100_11001100_11001100 {
 		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
 	}
-	// TODO: Or --------------------
-	// TODO: And --------------------
+	//  Or --------------------
+	cpu.Reset()
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	cpu.X[4] = 0b11110000_11110000_11110000_11110000
+	code = GenCode(OpOr, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b11111100_11111100_11111100_11111100 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	// And --------------------
+	cpu.Reset()
+	cpu.X[3] = 0b11001100_11001100_11001100_11001100
+	cpu.X[4] = 0b11110000_11110000_11110000_11110000
+	code = GenCode(OpAnd, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0b11000000_11000000_11000000_11000000 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
 }

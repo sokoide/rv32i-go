@@ -198,11 +198,20 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpBgeu:
 		code = GetCodeBase("B", op1, op2, op3) | (0b111 << 12)
 		return code
+	case OpLb:
+		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b000 << 12) | (uint32(op1) << 7) | 0b0000011
+		return code
+	case OpLh:
+		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b001 << 12) | (uint32(op1) << 7) | 0b0000011
+		return code
 	case OpLw:
 		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (uint32(op1) << 7) | 0b0000011
 		return code
 	case OpLbu:
 		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b100 << 12) | (uint32(op1) << 7) | 0b0000011
+		return code
+	case OpLhu:
+		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0000011
 		return code
 	case OpSb:
 		imm115 := (uint32(op2) >> 5) & 0b1111111
