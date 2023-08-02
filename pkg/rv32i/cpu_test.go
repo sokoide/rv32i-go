@@ -498,4 +498,29 @@ func Test_Execute(t *testing.T) {
 	if cpu.X[3] != 0b11001100_11001100_11001111_11000011 {
 		t.Error("Wrong X3")
 	}
+
+	// Andi --------------------
+	cpu.Reset()
+	cpu.X[3] = 0
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// imm sign exteded to 0b11111111_11111111_11111111_00001111
+	code = GenCode(OpAndi, 3, 4, 0b1111_00001111)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b11001100_11001100_11001100_00001100 {
+		t.Error("Wrong X3")
+	}
+
+	cpu.X[3] = 0
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// imm 0b00000000_00000000_00000011_00001111
+	code = GenCode(OpAndi, 3, 4, 0b0011_00001111)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b00000000_00000000_00000000_00001100 {
+		t.Error("Wrong X3")
+	}
+
 }
