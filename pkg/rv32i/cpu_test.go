@@ -419,7 +419,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 1 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -429,7 +429,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -439,7 +439,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	// Sltiu --------------------
@@ -451,7 +451,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 1 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -461,7 +461,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -472,7 +472,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 1 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	// Xori --------------------
@@ -485,7 +485,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0b00110011_00110011_00110011_11000011 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -496,7 +496,31 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0b11001100_11001100_11001111_11000011 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
+
+	// Ori --------------------
+	cpu.Reset()
+	cpu.X[3] = 0
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// imm sign exteded to 0b11111111_11111111_11111111_00001111
+	code = GenCode(OpOri, 3, 4, 0b1111_00001111)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b11111111_11111111_11111111_11001111 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
+
+	cpu.X[3] = 0
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// imm 0b00000000_00000000_00000011_00001111
+	code = GenCode(OpOri, 3, 4, 0b0011_00001111)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b11001100_11001100_11001111_11001111 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	// Andi --------------------
@@ -509,7 +533,7 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0b11001100_11001100_11001100_00001100 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
 	cpu.X[3] = 0
@@ -520,7 +544,52 @@ func Test_Execute(t *testing.T) {
 
 	inc = cpu.Execute(instr)
 	if cpu.X[3] != 0b00000000_00000000_00000000_00001100 {
-		t.Error("Wrong X3")
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
 	}
 
+	// Slli --------------------
+	cpu.Reset()
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// left logical shift 26 bits
+	code = GenCode(OpSlli, 3, 4, 0b11010)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b00110000_00000000_00000000_00000000 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
+
+	// Srli --------------------
+	cpu.Reset()
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	// right logical shift 26 bits
+	code = GenCode(OpSrli, 3, 4, 0b11010)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b00000000_00000000_00000000_00110011 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
+
+	// Srai --------------------
+	cpu.Reset()
+	// right arithmetic shift 26 bits - negative
+	cpu.X[4] = 0b11001100_11001100_11001100_11001100
+	code = GenCode(OpSrai, 3, 4, 0b11010)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b11111111_11111111_11111111_11110011 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
+
+	// right arithmetic shift 26 bits - positive
+	cpu.X[4] = 0b01001100_11001100_11001100_11001100
+	code = GenCode(OpSrai, 3, 4, 0b11010)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[3] != 0b00000000_00000000_00000000_00010011 {
+		t.Errorf("Wrong X3, 0b%032b", cpu.X[3])
+	}
 }

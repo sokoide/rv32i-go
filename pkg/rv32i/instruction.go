@@ -134,6 +134,8 @@ func NewInstruction(instr uint32) *Instruction {
 		imm40 := instr >> 7 & 0b11111
 		imm = imm115<<5 | imm40
 		imm = SignExtension(imm, 11)
+	case InstructionTypeR:
+		imm = instr >> 25 & 0b11111
 	}
 	instance.Imm = imm
 
@@ -208,11 +210,23 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpXori:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b100 << 12) | (uint32(op1) << 7) | 0b0010011
 		return code
+	case OpOri:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b110 << 12) | (uint32(op1) << 7) | 0b0010011
+		return code
 	case OpAndi:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b111 << 12) | (uint32(op1) << 7) | 0b0010011
 		return code
+	case OpSlli:
+		shamt := uint32(op3) & 0b11111
+		code = (shamt << 20) | (uint32(op2) << 15) | (0b001 << 12) | (uint32(op1) << 7) | 0b0010011
+		return code
 	case OpSrli:
-		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0010011
+		shamt := uint32(op3) & 0b11111
+		code = (shamt << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0010011
+		return code
+	case OpSrai:
+		shamt := uint32(op3) & 0b11111
+		code = (0b1 << 30) | (shamt << 20) | (uint32(op2) << 15) | (0b101 << 12) | (uint32(op1) << 7) | 0b0010011
 		return code
 	case OpAdd:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (uint32(op1) << 7) | 0b0110011
@@ -373,7 +387,7 @@ func (i *Instruction) GetOpName() OpName {
 				case 0b0000000:
 					return OpSrli
 				case 0b0100000:
-					return OpSrli
+					return OpSrai
 				default:
 					panic(fmt.Sprintf("Opcode: %07b, Funct7 %07b, Funct3: %03b is invalid for %v", i.Opcode, i.Funct7, i.Funct3, i.Type))
 				}
