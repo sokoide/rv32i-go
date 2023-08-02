@@ -650,4 +650,88 @@ func Test_Execute(t *testing.T) {
 	if cpu.X[1] != 0b11001100_11001100_11001100_11000000 {
 		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
 	}
+
+	// Slt --------------------
+	cpu.Reset()
+	cpu.X[3] = 3
+	cpu.X[4] = 4
+	code = GenCode(OpSlt, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 1 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 3
+	cpu.X[4] = 3
+	code = GenCode(OpSlt, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0xfffffffe // -2
+	cpu.X[4] = 3
+	code = GenCode(OpSlt, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 1 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0xfffffffe // -2
+	cpu.X[4] = 0xfffffffd // -3
+	code = GenCode(OpSlt, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	// Sltu --------------------
+	cpu.Reset()
+	cpu.X[3] = 3
+	cpu.X[4] = 4
+	code = GenCode(OpSltu, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 1 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 3
+	cpu.X[4] = 3
+	code = GenCode(OpSltu, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0xfffffffe // -2, but testing as uint
+	cpu.X[4] = 3
+	code = GenCode(OpSltu, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
+
+	cpu.X[3] = 0xfffffffe // -2, but testing as uint
+	cpu.X[4] = 0xfffffffd // -3, but testing as uint
+	code = GenCode(OpSltu, 1, 3, 4)
+	instr = NewInstruction(code)
+
+	inc = cpu.Execute(instr)
+	if cpu.X[1] != 0 {
+		t.Errorf("Wrong X1, 0b%032b", cpu.X[1])
+	}
 }

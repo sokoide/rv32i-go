@@ -237,6 +237,12 @@ func GenCode(opn OpName, op1 int, op2 int, op3 int) uint32 {
 	case OpSll:
 		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b001 << 12) | (uint32(op1) << 7) | 0b0110011
 		return code
+	case OpSlt:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b010 << 12) | (uint32(op1) << 7) | 0b0110011
+		return code
+	case OpSltu:
+		code = (uint32(op3) << 20) | (uint32(op2) << 15) | (0b011 << 12) | (uint32(op1) << 7) | 0b0110011
+		return code
 	case OpLw:
 		code := (uint32(op2) << 20) | (uint32(op3) << 15) | (0b010 << 12) | (uint32(op1) << 7) | 0b0000011
 		return code
