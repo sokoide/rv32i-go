@@ -384,6 +384,7 @@ func Test_Execute(t *testing.T) {
 	// Lb --------------------
 	cpu.Reset()
 	cpu.Emu.Memory = make([]uint8, MaxMemory)
+	// TODO: use cpu.WriteU32
 	cpu.Emu.Memory[42] = 3
 	cpu.Emu.Memory[43] = 1
 	code = GenCode(OpLb, 10, 42, 0) // x10 <- 42(x0)
@@ -510,6 +511,7 @@ func Test_Execute(t *testing.T) {
 	instr = NewInstruction(code)
 
 	inc = cpu.Execute(instr)
+	// TODO: use cpu.ReadU32
 	got = uint32(cpu.Emu.Memory[42]) | (uint32(cpu.Emu.Memory[43]) << 8) | (uint32(cpu.Emu.Memory[44]) << 16) | (uint32(cpu.Emu.Memory[45]) << 24)
 	if got != 0x44 {
 		t.Errorf("Wrong memory 0x%08x", got)

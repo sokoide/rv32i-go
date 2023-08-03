@@ -106,20 +106,12 @@ func NewInstruction(instr uint32) *Instruction {
 	case InstructionTypeU:
 		imm = uint32(instr & 0b11111111_11111111_11110000_00000000)
 	case InstructionTypeJ:
-		if opcode == 0b1101111 {
-			// JAL
-			imm20 := instr >> 31
-			imm101 := instr >> 21 & 0b11_11111111
-			imm11 := instr >> 20 & 0b1
-			imm1912 := instr >> 12 & 0b11111111
-			imm = imm20<<20 | imm101<<1 | imm11<<11 | imm1912<<12
-			imm = SignExtension(imm, 20)
-		} else {
-			// JALR
-			imm = instr >> 20
-			imm = SignExtension(imm, 11)
-		}
-		instance.Imm = imm
+		imm20 := instr >> 31
+		imm101 := instr >> 21 & 0b11_11111111
+		imm11 := instr >> 20 & 0b1
+		imm1912 := instr >> 12 & 0b11111111
+		imm = imm20<<20 | imm101<<1 | imm11<<11 | imm1912<<12
+		imm = SignExtension(imm, 20)
 	case InstructionTypeB:
 		imm12 := instr >> 31
 		imm105 := instr >> 25 & 0b111111
@@ -128,8 +120,13 @@ func NewInstruction(instr uint32) *Instruction {
 		imm = imm12<<11 | imm105<<5 | imm41<<1 | imm11
 		imm = SignExtension(imm, 12)
 	case InstructionTypeI:
-		imm110 := instr >> 20
-		imm = imm110
+		if opcode == 0b1100111 {
+			// JALR
+			imm = instr >> 20
+		} else {
+			imm110 := instr >> 20
+			imm = imm110
+		}
 		imm = SignExtension(imm, 11)
 	case InstructionTypeS:
 		imm115 := instr >> 25
@@ -300,11 +297,13 @@ func (i *Instruction) GetInstructionType() InstructionType {
 	switch i.Opcode {
 	case 0b0110111, 0b0010111:
 		return InstructionTypeU
-	case 0b1101111, 0b1100111:
+	// case 0b1101111, 0b1100111:
+	case 0b1101111:
 		return InstructionTypeJ
 	case 0b1100011:
 		return InstructionTypeB
-	case 0b0000011:
+	// case 0b0000011:
+	case 0b0000011, 0b1100111:
 		return InstructionTypeI
 	case 0b0010011:
 		if i.Funct3 == 0b001 || i.Funct3 == 0b101 {
@@ -339,8 +338,6 @@ func (i *Instruction) GetOpName() OpName {
 		switch i.Opcode {
 		case 0b1101111:
 			return OpJal
-		case 0b1100111:
-			return OpJalr
 		default:
 			panic(fmt.Sprintf("Opcode: %07b is invalid for %v", i.Opcode, i.Type))
 		}
@@ -363,7 +360,9 @@ func (i *Instruction) GetOpName() OpName {
 		}
 	case InstructionTypeI:
 		switch i.Opcode {
-		case 0b00000011:
+		case 0b1100111:
+			return OpJalr
+		case 0b0000011:
 			// L*
 			switch i.Funct3 {
 			case 0b000:
@@ -514,6 +513,18 @@ func (i *Instruction) GetCodeString() string {
 		return fmt.Sprintf("%s %s, %s, %s", i.GetOpName().String()[2:], RegName(i.Rd), RegName(i.Rs1), RegName(i.Rs2))
 	case InstructionTypeI:
 		return fmt.Sprintf("%s %s, %d(%s)", i.GetOpName().String()[2:], RegName(i.Rd), InterpretSingnedUint32(i.Imm), RegName(i.Rs1))
+	case InstructionTypeS:
+		return fmt.Sprintf("%s %s, %d(%s)", i.GetOpName().String()[2:], RegName(i.Rs1), InterpretSingnedUint32(i.Imm), RegName(i.Rs2))
+	case InstructionTypeB:
+		return fmt.Sprintf("%s %s, %s, %d", i.GetOpName().String()[2:], RegName(i.Rs1), RegName(i.Rs2), InterpretSingnedUint32(i.Imm))
+	case InstructionTypeU:
+		return fmt.Sprintf("%s %s, %d", i.GetOpName().String()[2:], RegName(i.Rd), InterpretSingnedUint32(i.Imm>>12))
+	case InstructionTypeJ:
+		return fmt.Sprintf("%s %s, PC+0x%x", i.GetOpName().String()[2:], RegName(i.Rd), InterpretSingnedUint32(i.Imm))
+	case InstructionTypeF:
+		return i.GetOpName().String()[2:] + "(TBD)"
+	case InstructionTypeC:
+		return i.GetOpName().String()[2:] + "(TBD)"
 	default:
 		return i.GetOpName().String()[2:] + "(TBD)"
 	}

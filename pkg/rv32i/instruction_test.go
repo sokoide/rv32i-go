@@ -31,14 +31,14 @@ func Test_NewInstruction(t *testing.T) {
 		// 800000b0: e7 80 80 f7   jalr    -136(ra)
 		//  rs2 and funct7 are not used in JALR
 		//  0xFFFFFEF0. It jumps to x[rs1] + 0xFFFFFEF0 == x0 + 0xFFFFFFE0 = -136
-		{0xf78080e7, Instruction{Type: InstructionTypeJ, Imm: 0xFFFFFF78, Funct7: 123, Rs2: 24, Rs1: 1, Funct3: 0, Rd: 1, Opcode: 0xf78080e7 & 0b1111111}},
+		{0xf78080e7, Instruction{Type: InstructionTypeI, Imm: 0xFFFFFF78, Funct7: 123, Rs2: 24, Rs1: 1, Funct3: 0, Rd: 1, Opcode: 0xf78080e7 & 0b1111111}},
 		// 80000010: ef 00 00 05  ▸jal▸0x80000060 <riscv32_boot>
 		//  JAL only use rd and imm
 		//  the current PC 0x80000010 + 0x50 = 0x80000060 is the jump target
 		{0x050000ef, Instruction{Type: InstructionTypeJ, Imm: 0x50, Funct7: 2, Rs2: 16, Rs1: 0, Funct3: 0, Rd: 1, Opcode: 0x050000ef & 0b1111111}},
 		// 80000084: 67 80 00 00   ret
 		//  ret -> jalr zero, ra, 0
-		{0x00008067, Instruction{Type: InstructionTypeJ, Imm: 0, Funct7: 0, Rs2: 0, Rs1: 1, Funct3: 0, Rd: 0, Opcode: 0x00008067 & 0b1111111}},
+		{0x00008067, Instruction{Type: InstructionTypeI, Imm: 0, Funct7: 0, Rs2: 0, Rs1: 1, Funct3: 0, Rd: 0, Opcode: 0x00008067 & 0b1111111}},
 		//       28: 63 00 00 00   beqz    zero, 0x28 <.Lline_table_start0+0x28>
 		{0x00000063, Instruction{Type: InstructionTypeB, Imm: 0, Funct7: 0, Rs2: 0, Rs1: 0, Funct3: 0, Rd: 0, Opcode: 0x00000063 & 0b1111111}},
 		// 800000ac: 97 00 00 00   auipc   ra, 0

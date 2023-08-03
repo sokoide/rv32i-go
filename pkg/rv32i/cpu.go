@@ -90,6 +90,7 @@ var Regs = map[string]int{
 	"x31":  31,
 }
 
+// TODO: should make a reverse lookup to avoid s0/fp
 func RegName(i uint8) string {
 	for k, v := range Regs {
 		if k[0] != 'x' && v == int(i) {
