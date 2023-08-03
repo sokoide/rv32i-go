@@ -27,7 +27,8 @@ func (e *Evaluator) Reset() {
 	e.PC = 0
 }
 
-func (e *Evaluator) EvaluateProgram(prog *Program) error {
+func (e *Evaluator) EvaluateProgram(prog *Program) ([]string, error) {
+	s := make([]string, 0)
 	log.Debugf("EvaluateProgram: stmt=%d", len(prog.statements))
 	e.Reset()
 
@@ -43,15 +44,14 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 	}
 
 	// dump
+	labelsR := make(map[uint32]string, 0)
+
 	log.Debug("Labels)")
 	for key, val := range e.labels {
 		log.Debugf("%-16s: 0x%08x", key, val)
+		labelsR[uint32(val)] = key
 	}
-	log.Debug("Code)")
-	for idx, code := range e.Code {
-		instr := rv32i.NewInstruction(code)
-		log.Debugf("0x%08x: 0x%08x %s", idx*4, code, instr.GetCodeString())
-	}
+
 	log.Debug("Links to Resolve)")
 	for key, val := range e.linksToResolve {
 		log.Debugf("0x%08x: %s", key, val)
@@ -59,14 +59,18 @@ func (e *Evaluator) EvaluateProgram(prog *Program) error {
 
 	e.resolveLinks()
 	log.Debug("After resolved)")
-	for key := range e.linksToResolve {
-		// log.Debugf("0x%08x: 0x%08x", key, e.Code[key/4])
-		code := e.Code[key/4]
+	for idx, code := range e.Code {
 		instr := rv32i.NewInstruction(code)
-		log.Debugf("0x%08x: 0x%08x %s", key, code, instr.GetCodeString())
+		addr := uint32(idx * 4)
+		if val, ok := labelsR[addr]; ok {
+			log.Debugf("%08x <%s>:", addr, val)
+			s = append(s, fmt.Sprintf("%08x <%s>:", addr, val))
+		}
+		log.Debugf("%8x: 0x%08x %s", addr, code, instr.GetCodeString())
+		s = append(s, fmt.Sprintf("%8x: 0x%08x %s", addr, code, instr.GetCodeString()))
 	}
 
-	return nil
+	return s, nil
 }
 
 func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {

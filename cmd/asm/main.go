@@ -104,7 +104,8 @@ main:
 
 	log.Info("* start evaluation")
 	ev := rv32iasm.NewEvaluator()
-	err = ev.EvaluateProgram(program)
+
+	_, err = ev.EvaluateProgram(program)
 	if err != nil {
 		log.Fatalf("EvaluateProgram error: %v", err)
 	}
