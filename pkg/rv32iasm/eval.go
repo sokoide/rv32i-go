@@ -42,7 +42,8 @@ func (e *Evaluator) Assemble(reader io.Reader) ([]string, error) {
 	log.Info("* start evaluation")
 	ev := NewEvaluator()
 
-	return ev.EvaluateProgram(program)}
+	return ev.EvaluateProgram(program)
+}
 
 func (e *Evaluator) EvaluateProgram(prog *Program) ([]string, error) {
 	s := make([]string, 0)
