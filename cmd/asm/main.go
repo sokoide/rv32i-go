@@ -93,19 +93,21 @@ main:
 	log.Tracef("src: %s", src)
 
 	reader := strings.NewReader(src)
-	scanner := rv32iasm.NewScanner(reader)
-
-	var program *rv32iasm.Program
-	program, err = scanner.Parse()
-	if err != nil {
-		log.Fatalf("Parse error: %v", err)
-	}
-	log.Debugf("* program=%+v", program)
-
-	log.Info("* start evaluation")
+	// scanner := rv32iasm.NewScanner(reader)
+	//
+	// var program *rv32iasm.Program
+	// program, err = scanner.Parse()
+	// if err != nil {
+	// 	log.Fatalf("Parse error: %v", err)
+	// }
+	// log.Debugf("* program=%+v", program)
+	//
+	// log.Info("* start evaluation")
 	ev := rv32iasm.NewEvaluator()
+	//
+	// _, err = ev.EvaluateProgram(program)
 
-	_, err = ev.EvaluateProgram(program)
+	_, err = ev.Assemble(reader)
 	if err != nil {
 		log.Fatalf("EvaluateProgram error: %v", err)
 	}

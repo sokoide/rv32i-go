@@ -3,6 +3,7 @@ package rv32iasm
 import (
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -26,6 +27,22 @@ func (e *Evaluator) Reset() {
 	e.Code = make([]uint32, 0)
 	e.PC = 0
 }
+
+func (e *Evaluator) Assemble(reader io.Reader) ([]string, error) {
+	var err error
+	var program *Program
+	scanner := NewScanner(reader)
+
+	program, err = scanner.Parse()
+	if err != nil {
+		log.Fatalf("Parse error: %v", err)
+	}
+	log.Debugf("* program=%+v", program)
+
+	log.Info("* start evaluation")
+	ev := NewEvaluator()
+
+	return ev.EvaluateProgram(program)}
 
 func (e *Evaluator) EvaluateProgram(prog *Program) ([]string, error) {
 	s := make([]string, 0)

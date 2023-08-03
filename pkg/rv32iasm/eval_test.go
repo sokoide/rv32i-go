@@ -87,7 +87,7 @@ main:
 	}
 
 	ev := NewEvaluator()
-	err = ev.EvaluateProgram(program)
+	_, err = ev.EvaluateProgram(program)
 	if err != nil {
 		t.Error("Failed to evaluate")
 	}
