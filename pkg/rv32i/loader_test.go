@@ -57,3 +57,27 @@ func Test_LoadStringAt(t *testing.T) {
 		}
 	}
 }
+
+func Test_LoadStringAt2(t *testing.T) {
+	mem := make([]uint8, MaxMemory)
+	program := `00000000 <boot>:
+       0: 0x00000093 Addi ra, 0(zero)
+       4: 0x00000413 Addi s0, 0(zero)
+       8: 0x00004537 Lui a0, 4
+       c: 0x00001117 Auipc sp, 1`
+
+	loader := NewLoader()
+	err := loader.LoadStringAt(program, &mem, MaxMemory)
+	if err != nil {
+		t.Error("Failed to load a string")
+	}
+
+	testdata := []uint32{0x00000093, 0x00000413, 0x00004537, 0x00001117}
+
+	for idx, u32 := range testdata {
+		got := binary.LittleEndian.Uint32(mem[idx*4 : idx*4+4])
+		if got != u32 {
+			t.Errorf("idx %d wanted 0x%08x, gt 0x%08x", idx, u32, got)
+		}
+	}
+}

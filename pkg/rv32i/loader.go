@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -110,7 +111,7 @@ func (l *Loader) ReadText(reader *bufio.Reader) (*[]uint32, error) {
 		if err != nil {
 			return nil, err
 		}
-		if len(line) < 21 {
+		if len(line) < 20 {
 			// not a vaild insruction line
 			continue
 		}
@@ -118,12 +119,26 @@ func (l *Loader) ReadText(reader *bufio.Reader) (*[]uint32, error) {
 			// label
 			continue
 		}
+
 		u32 := uint32(0)
-		s := 0
-		for i := 10; i < 21; i += 3 {
-			by := byteString2u8(line[i])*16 + byteString2u8(line[i+1])
-			u32 += uint32(by) << s
-			s += 8
+		if string(line[10:12]) == "0x" {
+			// syntax:
+			//       0: 0x00000093 Addi ra, 0(zero)
+			u64, _ := strconv.ParseUint(string(line[12:20]), 16, 32)
+			u32 = uint32(u64)
+		} else {
+			// syntax:
+			//       0: 93 00 00 00   li      ra, 0
+			if len(line) < 21 {
+				// not a vaild insruction line
+				continue
+			}
+			s := 0
+			for i := 10; i < 21; i += 3 {
+				by := byteString2u8(line[i])*16 + byteString2u8(line[i+1])
+				u32 += uint32(by) << s
+				s += 8
+			}
 		}
 		ba = append(ba, u32)
 	}
