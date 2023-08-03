@@ -90,14 +90,43 @@ var Regs = map[string]int{
 	"x31":  31,
 }
 
-// TODO: should make a reverse lookup to avoid s0/fp
+var RegsR = map[uint8]string{
+	0:  "zero",
+	1:  "ra",
+	2:  "sp",
+	3:  "gp",
+	4:  "tp",
+	5:  "t0",
+	6:  "t1",
+	7:  "t2",
+	8:  "s0", // s0/fp
+	9:  "s1",
+	10: "a0",
+	11: "a1", // a1/ret
+	12: "a2", // a2/ret
+	13: "a3",
+	14: "a4",
+	15: "a5",
+	16: "a6",
+	17: "a7",
+	18: "s2",
+	19: "s3",
+	20: "s4",
+	21: "s5",
+	22: "s6",
+	23: "s7",
+	24: "s8",
+	25: "s9",
+	26: "s10",
+	27: "s11",
+	28: "t3",
+	29: "t4",
+	30: "t5",
+	31: "t6",
+}
+
 func RegName(i uint8) string {
-	for k, v := range Regs {
-		if k[0] != 'x' && v == int(i) {
-			return k
-		}
-	}
-	return fmt.Sprintf("x%d", i)
+	return RegsR[i]
 }
 
 type Cpu struct {
