@@ -12,7 +12,52 @@ make
 make test
 ```
 
-## How to make RV32I assembly
+## How to run the assembler
+
+```sh
+make
+./asm -source data/demo.s
+```
+
+## How to run the assembled code with the emulator
+
+* Please take a look at [cmd/demo/main.go](./cmd/demo/main.go)
+
+## RV32I registers
+
+```txt
+// Register ABIName Description                         Saver
+// -----------------------------------------------------------
+// x0       zero    Hard-wired zero                     —
+// x1       ra      Return address                      Caller
+// x2       sp      Stack pointer                       Callee
+// x3       gp      Global pointer                      —
+// x4       tp      Thread pointer                      —
+// x5–7     t0–2    Temporaries                         Caller
+// x8       s0/fp   Saved register/frame pointer        Callee
+// x9       s1      Saved register                      Callee
+// x10–11   a0–1    Function arguments/return values    Caller
+// x12–17   a2–7    Function arguments                  Caller
+// x18–27   s2–11   Saved registers                     Callee
+// x28–31   t3–6    Temporaries                         Caller
+```
+
+## Supported Instructions
+
+### Regular Instructions
+
+* Major RV32I instructions are supported except for fence*, ecall, ebreak and cs*
+
+### Pesudo Instructions
+
+* `li`, `call`, `ret` or some other limited pseudo instructions are supported
+* Please refer to [assembler.y](./pkg/rv32iasm/assembler.y) for the complete list of the supported instructions
+
+# RV32I instructions
+
+* [RV32I, RV64I instructions](https://msyksphinz-self.github.io/riscv-isadoc/html/rvi.html)
+
+## How to make RV32I assembly for local testing
 
 * `main.c`, `build.ld` and `start.S` are built into RV32I by `Makefile` in `data` directory
 * Install llvm by `brew install llvm`. Apple's default LLVM doens't generate code for riscv32 target
@@ -161,28 +206,3 @@ INFO[0000] x31 = 0, 0x00000000
 INFO[0000] pc = 0x0000001c
 INFO[0000] * Completed
 ```
-
-## RV32I registers
-
-```txt
-// Register ABIName Description                         Saver
-// -----------------------------------------------------------
-// x0       zero    Hard-wired zero                     —
-// x1       ra      Return address                      Caller
-// x2       sp      Stack pointer                       Callee
-// x3       gp      Global pointer                      —
-// x4       tp      Thread pointer                      —
-// x5–7     t0–2    Temporaries                         Caller
-// x8       s0/fp   Saved register/frame pointer        Callee
-// x9       s1      Saved register                      Callee
-// x10–11   a0–1    Function arguments/return values    Caller
-// x12–17   a2–7    Function arguments                  Caller
-// x18–27   s2–11   Saved registers                     Callee
-// x28–31   t3–6    Temporaries                         Caller
-```
-
-# RV32I instructions
-
-* [RV32I, RV64I instructions](https://msyksphinz-self.github.io/riscv-isadoc/html/rvi.html)
-
-
