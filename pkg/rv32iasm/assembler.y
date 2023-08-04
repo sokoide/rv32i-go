@@ -25,14 +25,15 @@ func chkerr(err error) {
 %type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
 %type<stmt> beq_stmt bne_stmt blt_stmt bge_stmt bltu_stmt bgeu_stmt
 %type<stmt> lb_stmt lh_stmt lw_stmt lbu_stmt lhu_stmt sb_stmt sh_stmt sw_stmt
-%type<stmt> addi_stmt li_stmt sltiu_stmt andi_stmt srli_stmt seqz_stmt
+%type<stmt> addi_stmt li_stmt slti_stmt sltiu_stmt seqz_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
 %type<stmt> add_stmt sub_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
 %token<tok> REGISTER AUIPC LUI JAL JALR RET
 %token<tok> BEQ BNE BLT BGE BLTU BGEU
-%token<tok> LB LH LW LBU LHU SB SH SW ADDI LI SLTIU SEQZ ANDI SRLI
+%token<tok> LB LH LW LBU LHU SB SH SW
+%token<tok> ADDI LI SLTI SLTIU SEQZ XORI ORI ANDI SLLI SRLI SRAI
 %token<tok> ADD SUB
 
 
@@ -84,10 +85,15 @@ stmt: /* empty */ {
     | sw_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
+    | slti_stmt { $$ = $1 }
     | sltiu_stmt { $$ = $1 }
     | seqz_stmt { $$ = $1 }
+    | xori_stmt { $$ = $1 }
+    | ori_stmt { $$ = $1 }
     | andi_stmt { $$ = $1 }
+    | slli_stmt { $$ = $1 }
     | srli_stmt { $$ = $1 }
+    | srai_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
     | sub_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
@@ -363,6 +369,18 @@ li_stmt: LI REGISTER COMMA NUMBER {
         }
     }
 
+slti_stmt: SLTI REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* slti_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
 sltiu_stmt: SLTIU REGISTER COMMA REGISTER COMMA NUMBER {
         log.Debugf("* sltiu_stmt: %+v", $1)
         val, err := strconv.Atoi($6.lit)
@@ -384,6 +402,30 @@ seqz_stmt: SEQZ REGISTER COMMA REGISTER {
         }
     }
 
+xori_stmt: XORI REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* xori_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+ori_stmt: ORI REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* ori_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
 andi_stmt: ANDI REGISTER COMMA REGISTER COMMA NUMBER {
         log.Debugf("* andi_stmt: %+v", $1)
         val, err := strconv.Atoi($6.lit)
@@ -396,9 +438,32 @@ andi_stmt: ANDI REGISTER COMMA REGISTER COMMA NUMBER {
         }
 }
 
+slli_stmt: SLLI REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* slli_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
 
 srli_stmt: SRLI REGISTER COMMA REGISTER COMMA NUMBER {
         log.Debugf("* srli_stmt: %+v", $1)
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+srai_stmt: SRAI REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* srai_stmt: %+v", $1)
         val, err := strconv.Atoi($6.lit)
         chkerr(err)
         $$ = &statement{
