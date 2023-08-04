@@ -216,6 +216,22 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return ADD
 	case "sub":
 		return SUB
+	case "sll":
+		return SLL
+	case "slt":
+		return SLT
+	case "sltu":
+		return SLTU
+	case "xor":
+		return XOR
+	case "srl":
+		return SRL
+	case "sra":
+		return SRA
+	case "or":
+		return OR
+	case "and":
+		return AND
 	case "ret":
 		return RET
 	default:

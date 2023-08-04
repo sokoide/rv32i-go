@@ -26,7 +26,7 @@ func chkerr(err error) {
 %type<stmt> beq_stmt bne_stmt blt_stmt bge_stmt bltu_stmt bgeu_stmt
 %type<stmt> lb_stmt lh_stmt lw_stmt lbu_stmt lhu_stmt sb_stmt sh_stmt sw_stmt
 %type<stmt> addi_stmt li_stmt slti_stmt sltiu_stmt seqz_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
-%type<stmt> add_stmt sub_stmt
+%type<stmt> add_stmt sub_stmt sll_stmt slt_stmt sltu_stmt xor_stmt srl_stmt sra_stmt or_stmt and_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
@@ -34,7 +34,7 @@ func chkerr(err error) {
 %token<tok> BEQ BNE BLT BGE BLTU BGEU
 %token<tok> LB LH LW LBU LHU SB SH SW
 %token<tok> ADDI LI SLTI SLTIU SEQZ XORI ORI ANDI SLLI SRLI SRAI
-%token<tok> ADD SUB
+%token<tok> ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
 
 
 %left '+' '-'
@@ -96,6 +96,14 @@ stmt: /* empty */ {
     | srai_stmt { $$ = $1 }
     | add_stmt { $$ = $1 }
     | sub_stmt { $$ = $1 }
+    | sll_stmt { $$ = $1 }
+    | slt_stmt { $$ = $1 }
+    | sltu_stmt { $$ = $1 }
+    | xor_stmt { $$ = $1 }
+    | srl_stmt { $$ = $1 }
+    | sra_stmt { $$ = $1 }
+    | or_stmt { $$ = $1 }
+    | and_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
         log.Debugf("* stmt expr %v", $$)
@@ -493,6 +501,87 @@ sub_stmt: SUB REGISTER COMMA REGISTER COMMA REGISTER {
             op3: rv32i.Regs[$6.lit],
         }
     }
+
+sll_stmt: SLL REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* sll_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+slt_stmt: SLT REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* slt_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+sltu_stmt: SLTU REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* sltu_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+xor_stmt: XOR REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* xor_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+srl_stmt: SRL REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* srl_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+sra_stmt: SRA REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* sra_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+or_stmt: OR REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* or_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
+and_stmt: AND REGISTER COMMA REGISTER COMMA REGISTER {
+        log.Debugf("* and_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: rv32i.Regs[$6.lit],
+        }
+    }
+
 
 label_stmt: IDENT COLON {
         log.Debugf("* label_stmt: %+v", $1)
