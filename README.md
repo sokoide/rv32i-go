@@ -48,7 +48,7 @@ make
 
 * Major RV32I instructions are supported except for fence*, ecall, ebreak and cs*
 
-### Pesudo Instructions
+### Pseudo Instructions
 
 * `li`, `call`, `ret` or some other limited pseudo instructions are supported
 * Please refer to [assembler.y](./pkg/rv32iasm/assembler.y) for the complete list of the supported instructions
