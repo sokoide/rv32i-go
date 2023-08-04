@@ -43,6 +43,8 @@ func Test_Parse(t *testing.T) {
 	sra ra, a0, a1
 	or ra, a0, a1
 	and ra, a0, a1
+	call a0, hoge
+	call hoge
 	li ra, 0
 	li s0, 0
 	seqz ra, a0
@@ -94,9 +96,11 @@ func Test_Parse(t *testing.T) {
 		{"sra", 1, 10, 11, ""},
 		{"or", 1, 10, 11, ""},
 		{"and", 1, 10, 11, ""},
+		{"call", 10, 0, 0, "hoge"},
+		{"call", 1, 0, 0, "hoge"},
 		{"li", 1, 0, 0, ""},
 		{"li", 8, 0, 0, ""},
-		{"seqz", 1, 10, 0, ""},
+		{"sltiu", 1, 10, 1, ""},
 		{"jalr", 0, 0, 1, ""},
 		{"comment", 0, 0, 0, ""},
 	}

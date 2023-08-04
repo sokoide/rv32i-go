@@ -29,7 +29,7 @@ func chkerr(err error) {
 %type<stmt> addi_stmt slti_stmt sltiu_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
 %type<stmt> add_stmt sub_stmt sll_stmt slt_stmt sltu_stmt xor_stmt srl_stmt sra_stmt or_stmt and_stmt
 // pesudo instructions
-%type<stmt> li_stmt seqz_stmt ret_stmt
+%type<stmt> call_stmt li_stmt seqz_stmt ret_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 
@@ -41,7 +41,7 @@ func chkerr(err error) {
 %token<tok> ADDI SLTI SLTIU XORI ORI ANDI SLLI SRLI SRAI
 %token<tok> ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
 // pseudo instructions
-%token<tok> LI SEQZ RET
+%token<tok> CALL LI SEQZ RET
 
 
 %left '+' '-'
@@ -108,6 +108,8 @@ stmt: /* empty */ {
     | sra_stmt { $$ = $1 }
     | or_stmt { $$ = $1 }
     | and_stmt { $$ = $1 }
+// pseudo instructions
+    | call_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
     | seqz_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
@@ -177,7 +179,7 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
         chkerr(err)
         $$ = &statement{
             opcode: $1.lit,
-            op1: 1,
+            op1: 1, // if rd is omitted, defaults to x1
             op2: val,
 			op3: rv32i.Regs[$4.lit],
         }
@@ -559,6 +561,23 @@ and_stmt: AND REGISTER COMMA REGISTER COMMA REGISTER {
         }
     }
 
+// pseudo instructions
+call_stmt: CALL REGISTER COMMA IDENT {
+        log.Debugf("* call_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            str1: $4.lit,
+        }
+    }
+    | CALL IDENT {
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: 1, // if rd is omitted, defaults to x1
+            str1: $2.lit,
+        }
+    }
+
 li_stmt: LI REGISTER COMMA NUMBER {
         log.Debugf("* li_stmt: %+v", $1)
         val, err := strconv.Atoi($4.lit)
@@ -573,9 +592,10 @@ li_stmt: LI REGISTER COMMA NUMBER {
 seqz_stmt: SEQZ REGISTER COMMA REGISTER {
         log.Debugf("* seqz_stmt: %+v", $1)
         $$ = &statement{
-            opcode: $1.lit,
+            opcode: "sltiu",
             op1: rv32i.Regs[$2.lit],
             op2: rv32i.Regs[$4.lit],
+            op3: 1,
         }
     }
 

@@ -192,14 +192,10 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return SW
 	case "addi":
 		return ADDI
-	case "li":
-		return LI
 	case "slti":
 		return SLTI
 	case "sltiu":
 		return SLTIU
-	case "seqz":
-		return SEQZ
 	case "xori":
 		return XORI
 	case "ori":
@@ -232,6 +228,13 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return OR
 	case "and":
 		return AND
+	// pseudo instructions
+	case "call":
+		return CALL
+	case "li":
+		return LI
+	case "seqz":
+		return SEQZ
 	case "ret":
 		return RET
 	default:

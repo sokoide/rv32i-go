@@ -10,9 +10,14 @@ import (
 	"github.com/sokoide/rv32i-go/pkg/rv32i"
 )
 
+type resolveTarget struct {
+	op     string
+	symbol string
+}
+
 type Evaluator struct {
 	labels         map[string]int
-	linksToResolve map[int]string
+	linksToResolve map[int]resolveTarget
 	Code           []uint32
 	PC             int
 }
@@ -23,7 +28,7 @@ func NewEvaluator() *Evaluator {
 
 func (e *Evaluator) Reset() {
 	e.labels = make(map[string]int, 0)
-	e.linksToResolve = make(map[int]string, 0)
+	e.linksToResolve = make(map[int]resolveTarget, 0)
 	e.Code = make([]uint32, 0)
 	e.PC = 0
 }
@@ -39,7 +44,7 @@ func (e *Evaluator) Assemble(reader io.Reader) ([]string, error) {
 	}
 	log.Debugf("* program=%+v", program)
 
-	log.Info("* start evaluation")
+	log.Debug("* start evaluation")
 	ev := NewEvaluator()
 
 	return ev.EvaluateProgram(program)
@@ -72,7 +77,7 @@ func (e *Evaluator) EvaluateProgram(prog *Program) ([]string, error) {
 
 	log.Debug("Links to Resolve)")
 	for key, val := range e.linksToResolve {
-		log.Debugf("0x%08x: %s", key, val)
+		log.Debugf("0x%08x: %s, %s", key, val.op, val.symbol)
 	}
 
 	e.resolveLinks()
@@ -104,12 +109,12 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 			// op1: rd, op2: offset
 			return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, stmt.op2, stmt.op3)}, true
 		} else {
-			// op1: label
+			// str1: label
 			if val, ok := e.labels[stmt.str1]; ok {
 				imm := val - e.PC
 				return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, imm, 0)}, true
 			} else {
-				e.linksToResolve[e.PC] = stmt.str1
+				e.linksToResolve[e.PC] = resolveTarget{"jal", stmt.str1}
 				return []uint32{rv32i.GenCode(rv32i.OpJal, stmt.op1, 0, 0)}, true
 			}
 		}
@@ -119,25 +124,9 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "addi":
 		// op1: rd, op2: rs1, op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "li":
-		// op1: rd, op2: imm
-		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) == 0 {
-			return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2)}, true
-		} else {
-			hi := int(rv32i.SignExtension((uint32(stmt.op2) >> 12), 20))
-			low := stmt.op2 & 0b1111_1111_1111
-			log.Debugf("%d, %d\n", hi, low)
-			return []uint32{
-				rv32i.GenCode(rv32i.OpLui, stmt.op1, hi, 0),
-				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
-			}, true
-		}
 	case "sltiu":
 		// op1: rd, op2: rs1, op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "seqz":
-		// op1: rd, op2: rs1
-		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, 1)}, true
 	case "andi":
 		// op1: rd, op2: rs1: op3: imm
 		return []uint32{rv32i.GenCode(rv32i.OpAndi, stmt.op1, stmt.op2, stmt.op3)}, true
@@ -165,6 +154,36 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "sw":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpSw, stmt.op1, stmt.op2, stmt.op3)}, true
+	// pseudo instructions
+	case "call":
+		// op1: rd, str1: symbol
+		if val, ok := e.labels[stmt.str1]; ok {
+			hi := int(rv32i.SignExtension((uint32(val) >> 12), 20))
+			low := val & 0b1111_1111_1111
+			return []uint32{
+				rv32i.GenCode(rv32i.OpAuipc, stmt.op1, hi, 0),
+				rv32i.GenCode(rv32i.OpJalr, stmt.op1, low, 0),
+			}, true
+		} else {
+			e.linksToResolve[e.PC] = resolveTarget{"call", stmt.str1}
+			return []uint32{
+				rv32i.GenCode(rv32i.OpAuipc, stmt.op1, 0, 0),
+				rv32i.GenCode(rv32i.OpJalr, stmt.op1, 0, 0),
+			}, true
+		}
+	case "li":
+		// op1: rd, op2: imm
+		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) == 0 {
+			return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, stmt.op2)}, true
+		} else {
+			hi := int(rv32i.SignExtension((uint32(stmt.op2) >> 12), 20))
+			low := stmt.op2 & 0b1111_1111_1111
+			log.Debugf("%d, %d\n", hi, low)
+			return []uint32{
+				rv32i.GenCode(rv32i.OpLui, stmt.op1, hi, 0),
+				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
+			}, true
+		}
 	case "label":
 		e.labels[stmt.str1] = e.PC
 		return []uint32{0}, false
@@ -181,17 +200,26 @@ func (e *Evaluator) resolveLinks() error {
 	// TODO: otherwise, insert auipc and jal
 	// To simplify, the assembler always uses 'jal x1, imm' assuming the target is
 	// located between 0x0000 and 0x80000 (512KB)
-	for PC, label := range e.linksToResolve {
-		if val, ok := e.labels[label]; ok {
-			if rv32i.Abs(val-PC) <= 512*1024 {
-				imm := val - PC
+	for PC, rt := range e.linksToResolve {
+		if val, ok := e.labels[rt.symbol]; ok {
+			switch rt.op {
+			case "jal":
+				if rv32i.Abs(val-PC) <= 512*1024 {
+					imm := val - PC
+					rd := int((e.Code[PC/4] >> 7) & 0x11111)
+					e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, rd, imm, 0)
+				} else {
+					return fmt.Errorf("label %s is too far! PC:%x, %s:%x", rt.symbol, PC, rt.symbol, val)
+				}
+			case "call":
 				rd := int((e.Code[PC/4] >> 7) & 0x11111)
-				e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, rd, imm, 0)
-			} else {
-				return fmt.Errorf("label %s is too far! PC:%x, %s:%x", label, PC, label, val)
+				hi := int(rv32i.SignExtension((uint32(val) >> 12), 20))
+				low := val & 0b1111_1111_1111
+				e.Code[PC/4] = rv32i.GenCode(rv32i.OpAuipc, rd, hi, 0)
+				e.Code[PC/4+1] = rv32i.GenCode(rv32i.OpJalr, rd, low, 0)
 			}
 		} else {
-			return fmt.Errorf("label %s not found", label)
+			return fmt.Errorf("label %s not found", rt.symbol)
 		}
 	}
 	return nil

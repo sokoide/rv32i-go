@@ -3,6 +3,8 @@ package rv32iasm
 import (
 	"strings"
 	"testing"
+
+	"github.com/sokoide/rv32i-go/pkg/rv32i"
 )
 
 func Test_EvaluateProgram(t *testing.T) {
@@ -78,6 +80,10 @@ main:
 	lw	s0, 24(sp)
 	addi	sp, sp, 32
 	ret
+manualtest0:
+	call manualtest1
+manualtest1:
+	call main
 `
 	reader := strings.NewReader(src)
 	scanner := NewScanner(reader)
@@ -110,6 +116,8 @@ main:
 		0xf68080e7, 0xfea40723, 0xff442503, 0x00000097, 0xf54080e7, 0xff042503, 0x00000097,
 		0xf48080e7, 0xfef44503, 0x00000097, 0xf3c080e7, 0xfee44503, 0x00000097, 0xf30080e7,
 		0x00000513, 0x01c12083, 0x01812403, 0x02010113, 0x00008067,
+		// manualtest
+		0x00000097, 0x110000e7, 0x00000097, 0x084000e7,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))
@@ -119,5 +127,41 @@ main:
 		if got != wants[idx] {
 			t.Errorf("Unexpected code at %d. got:0x%08x, want:0x%08x", idx, got, wants[idx])
 		}
+	}
+}
+
+func Test_Call(t *testing.T) {
+	src := `li x3,1
+li x4,2
+call hoge
+li a1, 42
+hoge:
+li a0, 123
+ret`
+	// src will be assembled into
+	//  0: addi, gp, 1(zero)
+	//  4: addi tp, 2(zero)
+	//  8: auipc ra, 0
+	//  c: jalr ra, 14(zero)
+	// 10: addi a1, 42(zero)
+	// 14: hoge
+	//   addi a0, 123(zero)
+	// 18: jalr zero, 0(ra)
+	want := uint32(123)
+
+	reader := strings.NewReader(src)
+	ev := NewEvaluator()
+	code, err := ev.Assemble(reader)
+
+	if err != nil {
+		t.Error("Failed to assemble")
+	}
+
+	e := rv32i.NewEmulator()
+	e.LoadString(strings.Join(code, "\n"))
+	e.StepUntil(0x10)
+
+	if e.Cpu.X[10] != want {
+		t.Errorf("x10 must be 0x%08x, but was 0x%08x", want, e.Cpu.X[10])
 	}
 }
