@@ -174,10 +174,16 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return BLTU
 	case "bgeu":
 		return BGEU
+	case "lb":
+		return LB
+	case "lh":
+		return LH
 	case "lw":
 		return LW
 	case "lbu":
 		return LBU
+	case "lhu":
+		return LHU
 	case "sb":
 		return SB
 	case "sh":

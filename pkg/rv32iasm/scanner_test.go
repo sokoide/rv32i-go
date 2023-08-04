@@ -18,6 +18,11 @@ func Test_Parse(t *testing.T) {
 	bge ra, a0, 123
 	bltu ra, a0, 123
 	bgeu ra, a0, 123
+	lb ra, -100(a0)
+	lh ra, -100(a0)
+	lw ra, -100(a0)
+	lbu ra, -100(a0)
+	lhu ra, -100(a0)
 # Another comment`
 
 	reader := strings.NewReader(src)
@@ -40,6 +45,11 @@ func Test_Parse(t *testing.T) {
 		{"bge", 1, 10, 123, ""},
 		{"bltu", 1, 10, 123, ""},
 		{"bgeu", 1, 10, 123, ""},
+		{"lb", 1, -100, 10, ""},
+		{"lh", 1, -100, 10, ""},
+		{"lw", 1, -100, 10, ""},
+		{"lbu", 1, -100, 10, ""},
+		{"lhu", 1, -100, 10, ""},
 		{"comment", 0, 0, 0, ""},
 	}
 
