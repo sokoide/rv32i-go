@@ -162,6 +162,18 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return JAL
 	case "jalr":
 		return JALR
+	case "beq":
+		return BEQ
+	case "bne":
+		return BNE
+	case "blt":
+		return BLT
+	case "bge":
+		return BGE
+	case "bltu":
+		return BLTU
+	case "bgeu":
+		return BGEU
 	case "lw":
 		return LW
 	case "lbu":

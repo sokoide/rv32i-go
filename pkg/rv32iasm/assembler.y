@@ -23,13 +23,16 @@ func chkerr(err error) {
 
 %type<program> program
 %type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
+%type<stmt> beq_stmt bne_stmt blt_stmt bge_stmt bltu_stmt bgeu_stmt
 %type<stmt> lw_stmt lbu_stmt sb_stmt sh_stmt sw_stmt
 %type<stmt> addi_stmt li_stmt sltiu_stmt andi_stmt srli_stmt seqz_stmt
 %type<stmt> add_stmt sub_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI JAL JALR RET LW LBU SB SH SW ADDI LI SLTIU SEQZ ANDI SRLI
+%token<tok> REGISTER AUIPC LUI JAL JALR RET
+%token<tok> BEQ BNE BLT BGE BLTU BGEU
+%token<tok> LW LBU SB SH SW ADDI LI SLTIU SEQZ ANDI SRLI
 %token<tok> ADD SUB
 
 
@@ -65,6 +68,12 @@ stmt: /* empty */ {
     | jal_stmt { $$ = $1 }
     | jalr_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
+    | beq_stmt { $$ = $1 }
+    | bne_stmt { $$ = $1 }
+    | blt_stmt { $$ = $1 }
+    | bge_stmt { $$ = $1 }
+    | bltu_stmt { $$ = $1 }
+    | bgeu_stmt { $$ = $1 }
     | lw_stmt { $$ = $1 }
     | lbu_stmt { $$ = $1 }
     | sb_stmt { $$ = $1 }
@@ -157,6 +166,78 @@ ret_stmt: RET {
             op1: 0,
             op2: 0,
             op3: 1,
+        }
+    }
+
+beq_stmt: BEQ REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* beq_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "beq",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+bne_stmt: BNE REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* bne_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "bne",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+blt_stmt: BLT REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* blt_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "blt",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+bge_stmt: BGE REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* bge_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "bge",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+bltu_stmt: BLTU REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* bltu_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "bltu",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
+        }
+    }
+
+bgeu_stmt: BGEU REGISTER COMMA REGISTER COMMA NUMBER {
+        log.Debugf("* bgeu_stmt")
+        val, err := strconv.Atoi($6.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "bgeu",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: val,
         }
     }
 
