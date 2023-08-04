@@ -25,11 +25,8 @@ func Test_Parse(t *testing.T) {
 	sh ra, -100(a0)
 	sw ra, -100(a0)
 	addi ra, a0, -123
-	li ra, 0
-	li s0, 0
 	slti ra, a0, -123
 	sltiu ra, a0, 123
-	seqz ra, a0
 	xori ra, a0, -123
 	ori ra, a0, -123
 	andi ra, a0, -123
@@ -46,6 +43,10 @@ func Test_Parse(t *testing.T) {
 	sra ra, a0, a1
 	or ra, a0, a1
 	and ra, a0, a1
+	li ra, 0
+	li s0, 0
+	seqz ra, a0
+	ret
 # Another comment`
 
 	reader := strings.NewReader(src)
@@ -75,11 +76,8 @@ func Test_Parse(t *testing.T) {
 		{"sh", 1, -100, 10, ""},
 		{"sw", 1, -100, 10, ""},
 		{"addi", 1, 10, -123, ""},
-		{"li", 1, 0, 0, ""},
-		{"li", 8, 0, 0, ""},
 		{"slti", 1, 10, -123, ""},
 		{"sltiu", 1, 10, 123, ""},
-		{"seqz", 1, 10, 0, ""},
 		{"xori", 1, 10, -123, ""},
 		{"ori", 1, 10, -123, ""},
 		{"andi", 1, 10, -123, ""},
@@ -96,6 +94,10 @@ func Test_Parse(t *testing.T) {
 		{"sra", 1, 10, 11, ""},
 		{"or", 1, 10, 11, ""},
 		{"and", 1, 10, 11, ""},
+		{"li", 1, 0, 0, ""},
+		{"li", 8, 0, 0, ""},
+		{"seqz", 1, 10, 0, ""},
+		{"jalr", 0, 0, 1, ""},
 		{"comment", 0, 0, 0, ""},
 	}
 

@@ -22,19 +22,26 @@ func chkerr(err error) {
 }
 
 %type<program> program
-%type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt ret_stmt
+// regular instructions
+%type<stmt> stmt lui_stmt auipc_stmt jal_stmt jalr_stmt
 %type<stmt> beq_stmt bne_stmt blt_stmt bge_stmt bltu_stmt bgeu_stmt
 %type<stmt> lb_stmt lh_stmt lw_stmt lbu_stmt lhu_stmt sb_stmt sh_stmt sw_stmt
-%type<stmt> addi_stmt li_stmt slti_stmt sltiu_stmt seqz_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
+%type<stmt> addi_stmt slti_stmt sltiu_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
 %type<stmt> add_stmt sub_stmt sll_stmt slt_stmt sltu_stmt xor_stmt srl_stmt sra_stmt or_stmt and_stmt
+// pesudo instructions
+%type<stmt> li_stmt seqz_stmt ret_stmt
 %type<stmt> label_stmt
 %type<expr> expr
+
+// regular instructions
 %token<tok> LF COLON COMMA LP RP NUMBER IDENT
-%token<tok> REGISTER AUIPC LUI JAL JALR RET
+%token<tok> REGISTER AUIPC LUI JAL JALR
 %token<tok> BEQ BNE BLT BGE BLTU BGEU
 %token<tok> LB LH LW LBU LHU SB SH SW
-%token<tok> ADDI LI SLTI SLTIU SEQZ XORI ORI ANDI SLLI SRLI SRAI
+%token<tok> ADDI SLTI SLTIU XORI ORI ANDI SLLI SRLI SRAI
 %token<tok> ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
+// pseudo instructions
+%token<tok> LI SEQZ RET
 
 
 %left '+' '-'
@@ -68,7 +75,6 @@ stmt: /* empty */ {
     | auipc_stmt { $$ = $1 }
     | jal_stmt { $$ = $1 }
     | jalr_stmt { $$ = $1 }
-    | ret_stmt { $$ = $1 }
     | beq_stmt { $$ = $1 }
     | bne_stmt { $$ = $1 }
     | blt_stmt { $$ = $1 }
@@ -84,10 +90,8 @@ stmt: /* empty */ {
     | sh_stmt { $$ = $1 }
     | sw_stmt { $$ = $1 }
     | addi_stmt { $$ = $1 }
-    | li_stmt { $$ = $1 }
     | slti_stmt { $$ = $1 }
     | sltiu_stmt { $$ = $1 }
-    | seqz_stmt { $$ = $1 }
     | xori_stmt { $$ = $1 }
     | ori_stmt { $$ = $1 }
     | andi_stmt { $$ = $1 }
@@ -104,6 +108,9 @@ stmt: /* empty */ {
     | sra_stmt { $$ = $1 }
     | or_stmt { $$ = $1 }
     | and_stmt { $$ = $1 }
+    | li_stmt { $$ = $1 }
+    | seqz_stmt { $$ = $1 }
+    | ret_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
     | expr {
         log.Debugf("* stmt expr %v", $$)
@@ -173,16 +180,6 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
             op1: 1,
             op2: val,
 			op3: rv32i.Regs[$4.lit],
-        }
-    }
-
-ret_stmt: RET {
-        log.Debugf("* ret_stmt")
-        $$ = &statement{
-            opcode: "jalr",
-            op1: 0,
-            op2: 0,
-            op3: 1,
         }
     }
 
@@ -366,17 +363,6 @@ addi_stmt: ADDI REGISTER COMMA REGISTER COMMA NUMBER {
         }
     }
 
-li_stmt: LI REGISTER COMMA NUMBER {
-        log.Debugf("* li_stmt: %+v", $1)
-        val, err := strconv.Atoi($4.lit)
-        chkerr(err)
-        $$ = &statement{
-            opcode: $1.lit,
-            op1: rv32i.Regs[$2.lit],
-            op2: val,
-        }
-    }
-
 slti_stmt: SLTI REGISTER COMMA REGISTER COMMA NUMBER {
         log.Debugf("* slti_stmt: %+v", $1)
         val, err := strconv.Atoi($6.lit)
@@ -398,15 +384,6 @@ sltiu_stmt: SLTIU REGISTER COMMA REGISTER COMMA NUMBER {
             op1: rv32i.Regs[$2.lit],
             op2: rv32i.Regs[$4.lit],
             op3: val,
-        }
-    }
-
-seqz_stmt: SEQZ REGISTER COMMA REGISTER {
-        log.Debugf("* seqz_stmt: %+v", $1)
-        $$ = &statement{
-            opcode: $1.lit,
-            op1: rv32i.Regs[$2.lit],
-            op2: rv32i.Regs[$4.lit],
         }
     }
 
@@ -582,6 +559,35 @@ and_stmt: AND REGISTER COMMA REGISTER COMMA REGISTER {
         }
     }
 
+li_stmt: LI REGISTER COMMA NUMBER {
+        log.Debugf("* li_stmt: %+v", $1)
+        val, err := strconv.Atoi($4.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: val,
+        }
+    }
+
+seqz_stmt: SEQZ REGISTER COMMA REGISTER {
+        log.Debugf("* seqz_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+        }
+    }
+
+ret_stmt: RET {
+        log.Debugf("* ret_stmt")
+        $$ = &statement{
+            opcode: "jalr",
+            op1: 0,
+            op2: 0,
+            op3: 1,
+        }
+    }
 
 label_stmt: IDENT COLON {
         log.Debugf("* label_stmt: %+v", $1)
