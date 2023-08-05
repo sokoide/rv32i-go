@@ -245,6 +245,12 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return NOT
 	case "seqz":
 		return SEQZ
+	case "snez":
+		return SNEZ
+	case "sltz":
+		return SLTZ
+	case "sgtz":
+		return SGTZ
 	case "ret":
 		return RET
 	default:

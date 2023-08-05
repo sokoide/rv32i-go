@@ -15,4 +15,8 @@ dummy:
 	mv a1, a0
 	neg a1, a0
 	not a1, a0
+	seqz a0, a1
+	snez a0, a1
+	sltz a0, a1
+	sgtz a0, a1
 	ret

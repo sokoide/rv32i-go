@@ -89,6 +89,10 @@ manualtest1:
 	mv a1, a0
 	neg a1, a0
 	not a1, a0
+	seqz a0, a1
+	snez a0, a1
+	sltz a0, a1
+	sgtz a0, a1
 	ret
 `
 	reader := strings.NewReader(src)
@@ -130,6 +134,8 @@ manualtest1:
 		0x00000013, 0x00050593,
 		// neg, not
 		0x40a005b3, 0xfff54593,
+		// s*
+		0x0015b513, 0x00b03533, 0x0005a533, 0x00b02533,
 		// ret
 		0x00008067,
 	}
