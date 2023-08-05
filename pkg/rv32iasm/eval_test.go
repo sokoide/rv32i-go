@@ -85,6 +85,8 @@ manualtest0:
 	la t0, main
 manualtest1:
 	call main
+	nop
+	mv a1, a0
 `
 	reader := strings.NewReader(src)
 	scanner := NewScanner(reader)
@@ -121,6 +123,8 @@ manualtest1:
 		0x00000097, 0x118000e7, 0x00000297, 0x08400293,
 		// manualtest1 - call backward
 		0x00000097, 0x084000e7,
+		// nop, mv
+		0x00000013, 0x00050593,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

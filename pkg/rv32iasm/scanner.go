@@ -235,6 +235,10 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return LA
 	case "li":
 		return LI
+	case "mv":
+		return MV
+	case "nop":
+		return NOP
 	case "seqz":
 		return SEQZ
 	case "ret":

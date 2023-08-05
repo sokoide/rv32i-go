@@ -10,3 +10,7 @@ entry:
 hoge:
 	li a0, 123
 	ret
+dummy:
+	nop
+	mv a1, a0
+	ret
