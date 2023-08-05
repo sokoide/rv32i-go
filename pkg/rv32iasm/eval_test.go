@@ -82,6 +82,7 @@ main:
 	ret
 manualtest0:
 	call manualtest1
+	la t0, main
 manualtest1:
 	call main
 `
@@ -116,8 +117,10 @@ manualtest1:
 		0xf68080e7, 0xfea40723, 0xff442503, 0x00000097, 0xf54080e7, 0xff042503, 0x00000097,
 		0xf48080e7, 0xfef44503, 0x00000097, 0xf3c080e7, 0xfee44503, 0x00000097, 0xf30080e7,
 		0x00000513, 0x01c12083, 0x01812403, 0x02010113, 0x00008067,
-		// manualtest
-		0x00000097, 0x110000e7, 0x00000097, 0x084000e7,
+		// manualtest0 - call forward
+		0x00000097, 0x118000e7, 0x00000297, 0x08400293,
+		// manualtest1 - call backward
+		0x00000097, 0x084000e7,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))
@@ -130,23 +133,36 @@ manualtest1:
 	}
 }
 
-func Test_Call(t *testing.T) {
-	src := `li x3,1
-li x4,2
-call hoge
-li a1, 42
+func Test_Call_La(t *testing.T) {
+	src := `entry:
+	li x3,1
+	li x4,2
+	call hoge
+	li a1, 42
+	la t0, entry
+	la t1, hoge
+	ret
 hoge:
-li a0, 123
-ret`
-	// src will be assembled into
-	//  0: addi, gp, 1(zero)
-	//  4: addi tp, 2(zero)
-	//  8: auipc ra, 0
-	//  c: jalr ra, 14(zero)
-	// 10: addi a1, 42(zero)
-	// 14: hoge
-	//   addi a0, 123(zero)
-	// 18: jalr zero, 0(ra)
+	li a0, 123
+	ret`
+	// made by 'make tmp' in data dir
+	//
+	// src will be assembeld as below
+	// 00000000 <entry>:
+	//        0: 93 01 10 00   li      gp, 1
+	//        4: 13 02 20 00   li      tp, 2
+	//        8: 97 00 00 00   auipc   ra, 0
+	//        c: e7 80 00 02   jalr    32(ra)
+	//       10: 93 05 a0 02   li      a1, 42
+	//       14: 97 02 00 00   auipc   t0, 0
+	//       18: 93 82 c2 fe   addi    t0, t0, -20
+	//       1c: 17 03 00 00   auipc   t1, 0
+	//       20: 13 03 c3 00   addi    t1, t1, 12
+	//       24: 67 80 00 00   ret
+	//
+	// 00000028 <hoge>:
+	//       28: 13 05 b0 07   li      a0, 123
+	//       2c: 67 80 00 00   ret
 	want := uint32(123)
 
 	reader := strings.NewReader(src)
@@ -159,9 +175,19 @@ ret`
 
 	e := rv32i.NewEmulator()
 	e.LoadString(strings.Join(code, "\n"))
-	e.StepUntil(0x10)
+	e.StepUntil(0x24)
 
 	if e.Cpu.X[10] != want {
 		t.Errorf("x10 must be 0x%08x, but was 0x%08x", want, e.Cpu.X[10])
+	}
+
+	want = uint32(0x0)
+	if e.Cpu.X[5] != want {
+		t.Errorf("x5 must be 0x%08x, but was 0x%08x", want, e.Cpu.X[5])
+	}
+
+	want = uint32(0x28)
+	if e.Cpu.X[6] != want {
+		t.Errorf("x6 must be 0x%08x, but was 0x%08x", want, e.Cpu.X[6])
 	}
 }

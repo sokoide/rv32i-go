@@ -171,6 +171,22 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 				rv32i.GenCode(rv32i.OpJalr, stmt.op1, 0, 0),
 			}, true
 		}
+	case "la":
+		// op1: rd, str1: symbol
+		if val, ok := e.labels[stmt.str1]; ok {
+			hi := int(rv32i.SignExtension((uint32(val) >> 12), 20))
+			low := val & 0b1111_1111_1111
+			return []uint32{
+				rv32i.GenCode(rv32i.OpAuipc, stmt.op1, hi, 0),
+				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, low),
+			}, true
+		} else {
+			e.linksToResolve[e.PC] = resolveTarget{"la", stmt.str1}
+			return []uint32{
+				rv32i.GenCode(rv32i.OpAuipc, stmt.op1, 0, 0),
+				rv32i.GenCode(rv32i.OpAddi, stmt.op1, 0, 0),
+			}, true
+		}
 	case "li":
 		// op1: rd, op2: imm
 		if (stmt.op2 & 0b01111111_11111111_11111000_00000000) == 0 {
@@ -203,20 +219,26 @@ func (e *Evaluator) resolveLinks() error {
 	for PC, rt := range e.linksToResolve {
 		if val, ok := e.labels[rt.symbol]; ok {
 			switch rt.op {
-			case "jal":
-				if rv32i.Abs(val-PC) <= 512*1024 {
-					imm := val - PC
-					rd := int((e.Code[PC/4] >> 7) & 0x11111)
-					e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, rd, imm, 0)
-				} else {
-					return fmt.Errorf("label %s is too far! PC:%x, %s:%x", rt.symbol, PC, rt.symbol, val)
-				}
 			case "call":
-				rd := int((e.Code[PC/4] >> 7) & 0x11111)
+				rd := int((e.Code[PC/4] >> 7) & 0b11111)
 				hi := int(rv32i.SignExtension((uint32(val) >> 12), 20))
 				low := val & 0b1111_1111_1111
 				e.Code[PC/4] = rv32i.GenCode(rv32i.OpAuipc, rd, hi, 0)
 				e.Code[PC/4+1] = rv32i.GenCode(rv32i.OpJalr, rd, low, 0)
+			case "jal":
+				if rv32i.Abs(val-PC) <= 512*1024 {
+					imm := val - PC
+					rd := int((e.Code[PC/4] >> 7) & 0b11111)
+					e.Code[PC/4] = rv32i.GenCode(rv32i.OpJal, rd, imm, 0)
+				} else {
+					return fmt.Errorf("label %s is too far! PC:%x, %s:%x", rt.symbol, PC, rt.symbol, val)
+				}
+			case "la":
+				rd := int((e.Code[PC/4] >> 7) & 0b11111)
+				hi := int(rv32i.SignExtension((uint32(val) >> 12), 20))
+				low := val & 0b1111_1111_1111
+				e.Code[PC/4] = rv32i.GenCode(rv32i.OpAuipc, rd, hi, 0)
+				e.Code[PC/4+1] = rv32i.GenCode(rv32i.OpAddi, rd, 0, low)
 			}
 		} else {
 			return fmt.Errorf("label %s not found", rt.symbol)

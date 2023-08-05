@@ -50,5 +50,9 @@ disass: $(TARGET)
 disassstart: $(TARGET)
 	llvm-objdump -D $(OUTDIR)/start.o
 
+tmp: tmp.s
+	$(CC) $(CCFLAGS) -c $< -o tmp.o
+	llvm-objdump --section=.text -D tmp.o
+
 clean:
 	rm -rf $(OUTDIR)

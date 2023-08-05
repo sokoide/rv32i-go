@@ -4,3 +4,4 @@
 # tmp files
 tags
 *.output
+*.o

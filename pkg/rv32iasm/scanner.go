@@ -231,6 +231,8 @@ func (s *Scanner) tokFromLit(lit string) int {
 	// pseudo instructions
 	case "call":
 		return CALL
+	case "la":
+		return LA
 	case "li":
 		return LI
 	case "seqz":
