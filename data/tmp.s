@@ -19,4 +19,14 @@ dummy:
 	snez a0, a1
 	sltz a0, a1
 	sgtz a0, a1
+	beqz a0, -4
+	bnez a0, -4
+	blez a0, -4
+	bgez a0, -4
+	bltz a0, -4
+	bgtz a0, -4
+	bgt a0, a1, -4
+	ble a0, a1, -4
+	bgtu a0, a1, -4
+	bleu a0, a1, -4
 	ret

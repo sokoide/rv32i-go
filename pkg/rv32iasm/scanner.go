@@ -229,6 +229,26 @@ func (s *Scanner) tokFromLit(lit string) int {
 	case "and":
 		return AND
 	// pseudo instructions
+	case "beqz":
+		return BEQZ
+	case "bnez":
+		return BNEZ
+	case "blez":
+		return BLEZ
+	case "bgez":
+		return BGEZ
+	case "bltz":
+		return BLTZ
+	case "bgtz":
+		return BGTZ
+	case "bgt":
+		return BGT
+	case "ble":
+		return BLE
+	case "bgtu":
+		return BGTU
+	case "bleu":
+		return BLEU
 	case "call":
 		return CALL
 	case "la":
