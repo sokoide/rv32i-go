@@ -103,6 +103,10 @@ manualtest1:
 	ble a0, a1, -4
 	bgtu a0, a1, -4
 	bleu a0, a1, -4
+	j 4
+	jal 4
+	jr a0
+	jalr a0
 	ret
 `
 	reader := strings.NewReader(src)
@@ -147,18 +151,13 @@ manualtest1:
 		// s*
 		0x0015b513, 0x00b03533, 0x0005a533, 0x00b02533,
 		// b*
-		// 50: e3 0e 05 fe   beqz    a0, 0x4c <dummy+0x1c>
-		// 54: e3 1e 05 fe   bnez    a0, 0x50 <dummy+0x20>
-		// 58: e3 5e a0 fe   blez    a0, 0x54 <dummy+0x24>
-		// 5c: e3 5e 05 fe   bgez    a0, 0x58 <dummy+0x28>
-
-		// 60: e3 4e 05 fe   bltz    a0, 0x5c <dummy+0x2c>
-		// 64: e3 4e a0 fe   bgtz    a0, 0x60 <dummy+0x30>
-		// 68: e3 ce a5 fe   blt     a1, a0, 0x64 <dummy+0x34>
-		// 6c: e3 de a5 fe   bge     a1, a0, 0x68 <dummy+0x38>
-		// 70: e3 ee a5 fe   bltu    a1, a0, 0x6c <dummy+0x3c>
-		// 74: e3 fe a5 fe   bgeu    a1, a0, 0x70 <dummy+0x40>
 		0xfe050ee3, 0xfe051ee3, 0xfea05ee3, 0xfe055ee3, 0xfe054ee3, 0xfea04ee3, 0xfea5cee3, 0xfea5dee3, 0xfea5eee3, 0xfea5fee3,
+		// j*
+		// 78: 6f 00 40 00   j       0x7c <dummy+0x4c>
+		// 7c: ef 00 40 00   jal     0x80 <dummy+0x50>
+		// 80: 67 00 05 00   jr      a0
+		// 84: e7 00 05 00   jalr    a0
+		0x0040006f, 0x004000ef, 0x00050067, 0x000500e7,
 		// ret
 		0x00008067,
 	}

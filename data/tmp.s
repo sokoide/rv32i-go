@@ -29,4 +29,8 @@ dummy:
 	ble a0, a1, -4
 	bgtu a0, a1, -4
 	bleu a0, a1, -4
+	j 4
+	jal 4
+	jr a0
+	jalr a0
 	ret

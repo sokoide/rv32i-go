@@ -249,6 +249,10 @@ func (s *Scanner) tokFromLit(lit string) int {
 		return BGTU
 	case "bleu":
 		return BLEU
+	case "j":
+		return J
+	case "jr":
+		return JR
 	case "call":
 		return CALL
 	case "la":

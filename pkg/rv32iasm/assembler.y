@@ -30,7 +30,7 @@ func chkerr(err error) {
 %type<stmt> add_stmt sub_stmt sll_stmt slt_stmt sltu_stmt xor_stmt srl_stmt sra_stmt or_stmt and_stmt
 // pesudo instructions
 %type<stmt> beqz_stmt bnez_stmt blez_stmt bgez_stmt bltz_stmt bgtz_stmt bgt_stmt ble_stmt bgtu_stmt bleu_stmt
-%type<stmt> call_stmt la_stmt li_stmt mv_stmt neg_stmt nop_stmt not_stmt
+%type<stmt> call_stmt j_stmt jr_stmt la_stmt li_stmt mv_stmt neg_stmt nop_stmt not_stmt
 %type<stmt> seqz_stmt snez_stmt sltz_stmt sgtz_stmt ret_stmt
 %type<stmt> label_stmt
 %type<expr> expr
@@ -44,7 +44,7 @@ func chkerr(err error) {
 %token<tok> ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
 // pseudo instructions
 %token<tok> BEQZ BNEZ BLEZ BGEZ BLTZ BGTZ BGT BLE BGTU BLEU
-%token<tok> CALL LA LI MV NEG NOP NOT
+%token<tok> CALL J JR LA LI MV NEG NOP NOT
 %token<tok> SEQZ SNEZ SLTZ SGTZ RET
 
 
@@ -124,6 +124,8 @@ stmt: /* empty */ {
     | bgtu_stmt { $$ = $1 }
     | bleu_stmt { $$ = $1 }
     | call_stmt { $$ = $1 }
+    | j_stmt { $$ = $1 }
+    | jr_stmt { $$ = $1 }
     | li_stmt { $$ = $1 }
     | la_stmt { $$ = $1 }
     | mv_stmt { $$ = $1 }
@@ -183,6 +185,16 @@ jal_stmt: JAL REGISTER COMMA NUMBER {
             str1: $2.lit,
         }
     }
+    | JAL NUMBER {
+        log.Debugf("* jal_stmt (offset): %+v", $1)
+        val, err := strconv.Atoi($2.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: 1, // if rd is omitted, defaults to x1
+			op2: val,
+        }
+    }
 
 jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
         log.Debugf("* jalr_stmt: %+v", $1)
@@ -204,6 +216,15 @@ jalr_stmt: JALR REGISTER COMMA NUMBER LP REGISTER RP {
             op1: 1, // if rd is omitted, defaults to x1
             op2: val,
 			op3: rv32i.Regs[$4.lit],
+        }
+    }
+	| JALR REGISTER {
+        log.Debugf("* jalr_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: $1.lit,
+            op1: 1, // if rd is omitted, defaults to x1
+            op2: 0,
+			op3: rv32i.Regs[$2.lit],
         }
     }
 
@@ -701,6 +722,27 @@ bleu_stmt: BLEU REGISTER COMMA REGISTER COMMA NUMBER {
             op1: rv32i.Regs[$4.lit],
             op2: rv32i.Regs[$2.lit],
             op3: val,
+        }
+    }
+
+j_stmt: J NUMBER {
+        log.Debugf("* j_stmt: %+v", $1)
+        val, err := strconv.Atoi($2.lit)
+        chkerr(err)
+        $$ = &statement{
+            opcode: "jal",
+            op1: 0,
+            op2: val,
+        }
+    }
+
+jr_stmt: JR REGISTER  {
+        log.Debugf("* jr_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: "jalr",
+            op1: 0,
+			op2: 0,
+            op3: rv32i.Regs[$2.lit],
         }
     }
 
