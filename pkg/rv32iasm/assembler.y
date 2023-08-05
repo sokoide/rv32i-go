@@ -813,12 +813,6 @@ nop_stmt: NOP {
 
 not_stmt: NOT REGISTER COMMA REGISTER {
         log.Debugf("* not_stmt: %+v", $1)
-        // $$ = &statement{
-        //     opcode: "xori",
-        //     op1: rv32i.Regs[$2.lit],
-        //     op2: rv32i.Regs[$4.lit],
-        //     op3: -1,
-        // }
         $$ = &statement{
             opcode: "xori",
             op1: rv32i.Regs[$2.lit],

@@ -153,10 +153,6 @@ manualtest1:
 		// b*
 		0xfe050ee3, 0xfe051ee3, 0xfea05ee3, 0xfe055ee3, 0xfe054ee3, 0xfea04ee3, 0xfea5cee3, 0xfea5dee3, 0xfea5eee3, 0xfea5fee3,
 		// j*
-		// 78: 6f 00 40 00   j       0x7c <dummy+0x4c>
-		// 7c: ef 00 40 00   jal     0x80 <dummy+0x50>
-		// 80: 67 00 05 00   jr      a0
-		// 84: e7 00 05 00   jalr    a0
 		0x0040006f, 0x004000ef, 0x00050067, 0x000500e7,
 		// ret
 		0x00008067,

@@ -278,10 +278,6 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 }
 
 func (e *Evaluator) resolveLinks() error {
-	// if the label is located +/-512KB from regx, use 'jal regx, imm'
-	// TODO: otherwise, insert auipc and jal
-	// To simplify, the assembler always uses 'jal x1, imm' assuming the target is
-	// located between 0x0000 and 0x80000 (512KB)
 	for PC, rt := range e.linksToResolve {
 		if val, ok := e.labels[rt.symbol]; ok {
 			switch rt.op {
@@ -292,6 +288,10 @@ func (e *Evaluator) resolveLinks() error {
 				e.Code[PC/4] = rv32i.GenCode(rv32i.OpAuipc, rd, hi, 0)
 				e.Code[PC/4+1] = rv32i.GenCode(rv32i.OpJalr, rd, low, 0)
 			case "jal":
+				// if the label is located +/-512KB from regx, use 'jal regx, imm'
+				// TODO: otherwise, insert auipc and jal
+				// To simplify, the assembler always uses 'jal x1, imm' assuming the target is
+				// located between 0x0000 and 0x80000 (512KB)
 				if rv32i.Abs(val-PC) <= 512*1024 {
 					imm := val - PC
 					rd := int((e.Code[PC/4] >> 7) & 0b11111)
