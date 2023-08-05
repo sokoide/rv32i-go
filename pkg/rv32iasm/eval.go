@@ -121,30 +121,39 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "jalr":
 		// op1: rd, op2: offset, op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpJalr, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "addi":
-		// op1: rd, op2: rs1, op3: imm
-		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "sltiu":
-		// op1: rd, op2: rs1, op3: imm
-		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "andi":
-		// op1: rd, op2: rs1: op3: imm
-		return []uint32{rv32i.GenCode(rv32i.OpAndi, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "srli":
-		// op1: rd, op2: rs1: op3: imm
-		return []uint32{rv32i.GenCode(rv32i.OpSrli, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "add":
-		// op1: rd, op2: rs1: op3: rs2
-		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
-	case "sub":
-		// op1: rd, op2: rs1: op3: rs2
-		return []uint32{rv32i.GenCode(rv32i.OpSub, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "beq":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBeq, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "bne":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBne, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "blt":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBlt, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "bge":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBge, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "bltu":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBltu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "bgeu":
+		// op1: rs1, op2: rs2, op3: offset
+		return []uint32{rv32i.GenCode(rv32i.OpBgeu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "lb":
+		// op1: rs2, op2: offset: op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpLb, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "lh":
+		// op1: rs2, op2: offset: op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpLh, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "lw":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpLw, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "lbu":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpLbu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "lhu":
+		// op1: rs2, op2: offset: op3: rs1
+		return []uint32{rv32i.GenCode(rv32i.OpLhu, stmt.op1, stmt.op2, stmt.op3)}, true
 	case "sb":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpSb, stmt.op1, stmt.op2, stmt.op3)}, true
@@ -154,6 +163,63 @@ func (e *Evaluator) gen_code(stmt *statement) ([]uint32, bool) {
 	case "sw":
 		// op1: rs2, op2: offset: op3: rs1
 		return []uint32{rv32i.GenCode(rv32i.OpSw, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "addi":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpAddi, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "slti":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSlti, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sltiu":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSltiu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "xori":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpXori, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "ori":
+		// op1: rd, op2: rs1, op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpOri, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "andi":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpAndi, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "slli":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSlli, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "srli":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSrli, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "srai":
+		// op1: rd, op2: rs1: op3: imm
+		return []uint32{rv32i.GenCode(rv32i.OpSrai, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "add":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpAdd, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sub":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSub, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sll":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSll, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "slt":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSlt, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sltu":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSltu, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "xor":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpXor, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "srl":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSrl, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "sra":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpSra, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "or":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpOr, stmt.op1, stmt.op2, stmt.op3)}, true
+	case "and":
+		// op1: rd, op2: rs1: op3: rs2
+		return []uint32{rv32i.GenCode(rv32i.OpAnd, stmt.op1, stmt.op2, stmt.op3)}, true
 	// pseudo instructions
 	case "call":
 		// op1: rd, str1: symbol

@@ -87,6 +87,9 @@ manualtest1:
 	call main
 	nop
 	mv a1, a0
+	neg a1, a0
+	not a1, a0
+	ret
 `
 	reader := strings.NewReader(src)
 	scanner := NewScanner(reader)
@@ -125,6 +128,10 @@ manualtest1:
 		0x00000097, 0x084000e7,
 		// nop, mv
 		0x00000013, 0x00050593,
+		// neg, not
+		0x40a005b3, 0xfff54593,
+		// ret
+		0x00008067,
 	}
 	if len(ev.Code) != len(wants) {
 		t.Errorf("Unexpected length. got:%d, want:%d", len(ev.Code), len(wants))

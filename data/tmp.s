@@ -13,4 +13,6 @@ hoge:
 dummy:
 	nop
 	mv a1, a0
+	neg a1, a0
+	not a1, a0
 	ret

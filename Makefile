@@ -34,7 +34,7 @@ run: demo
 	./demo
 
 runasm: asm
-	./asm
+	./asm -source ./data/demo.s
 
 install-goyacc:
 	go install golang.org/x/tools/cmd/goyacc@latest

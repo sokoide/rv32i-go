@@ -29,7 +29,7 @@ func chkerr(err error) {
 %type<stmt> addi_stmt slti_stmt sltiu_stmt xori_stmt ori_stmt andi_stmt slli_stmt srli_stmt srai_stmt
 %type<stmt> add_stmt sub_stmt sll_stmt slt_stmt sltu_stmt xor_stmt srl_stmt sra_stmt or_stmt and_stmt
 // pesudo instructions
-%type<stmt> call_stmt la_stmt li_stmt mv_stmt nop_stmt seqz_stmt ret_stmt
+%type<stmt> call_stmt la_stmt li_stmt mv_stmt neg_stmt nop_stmt not_stmt seqz_stmt ret_stmt
 %type<stmt> label_stmt
 %type<expr> expr
 
@@ -41,7 +41,7 @@ func chkerr(err error) {
 %token<tok> ADDI SLTI SLTIU XORI ORI ANDI SLLI SRLI SRAI
 %token<tok> ADD SUB SLL SLT SLTU XOR SRL SRA OR AND
 // pseudo instructions
-%token<tok> CALL LA LI MV NOP SEQZ RET
+%token<tok> CALL LA LI MV NEG NOP NOT SEQZ RET
 
 
 %left '+' '-'
@@ -113,7 +113,9 @@ stmt: /* empty */ {
     | li_stmt { $$ = $1 }
     | la_stmt { $$ = $1 }
     | mv_stmt { $$ = $1 }
+    | neg_stmt { $$ = $1 }
     | nop_stmt { $$ = $1 }
+    | not_stmt { $$ = $1 }
     | seqz_stmt { $$ = $1 }
     | ret_stmt { $$ = $1 }
     | label_stmt { $$ = $1}
@@ -610,6 +612,16 @@ mv_stmt: MV REGISTER COMMA REGISTER {
         }
     }
 
+neg_stmt: NEG REGISTER COMMA REGISTER {
+        log.Debugf("* neg_stmt: %+v", $1)
+        $$ = &statement{
+            opcode: "sub",
+            op1: rv32i.Regs[$2.lit],
+            op2: 0,
+            op3: rv32i.Regs[$4.lit],
+        }
+    }
+
 nop_stmt: NOP {
         log.Debugf("* nop_stmt: %+v", $1)
         $$ = &statement{
@@ -617,6 +629,22 @@ nop_stmt: NOP {
             op1: 0,
             op2: 0,
             op3: 0,
+        }
+    }
+
+not_stmt: NOT REGISTER COMMA REGISTER {
+        log.Debugf("* not_stmt: %+v", $1)
+        // $$ = &statement{
+        //     opcode: "xori",
+        //     op1: rv32i.Regs[$2.lit],
+        //     op2: rv32i.Regs[$4.lit],
+        //     op3: -1,
+        // }
+        $$ = &statement{
+            opcode: "xori",
+            op1: rv32i.Regs[$2.lit],
+            op2: rv32i.Regs[$4.lit],
+            op3: -1,
         }
     }
 

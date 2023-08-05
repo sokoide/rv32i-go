@@ -78,9 +78,11 @@ const CALL = 57391
 const LA = 57392
 const LI = 57393
 const MV = 57394
-const NOP = 57395
-const SEQZ = 57396
-const RET = 57397
+const NEG = 57395
+const NOP = 57396
+const NOT = 57397
+const SEQZ = 57398
+const RET = 57399
 
 var assemblerToknames = [...]string{
 	"$end",
@@ -135,7 +137,9 @@ var assemblerToknames = [...]string{
 	"LA",
 	"LI",
 	"MV",
+	"NEG",
 	"NOP",
+	"NOT",
 	"SEQZ",
 	"RET",
 	"'+'",
@@ -152,7 +156,7 @@ const assemblerEofCode = 1
 const assemblerErrCode = 2
 const assemblerInitialStackSize = 16
 
-//line pkg/rv32iasm/assembler.y:670
+//line pkg/rv32iasm/assembler.y:698
 
 //line yacctab:1
 var assemblerExca = [...]int8{
@@ -163,37 +167,38 @@ var assemblerExca = [...]int8{
 
 const assemblerPrivate = 57344
 
-const assemblerLast = 324
+const assemblerLast = 334
 
 var assemblerAct = [...]int16{
-	94, 93, 48, 50, 49, 51, 52, 53, 54, 55,
-	56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
-	66, 67, 68, 69, 70, 71, 72, 73, 74, 75,
-	76, 77, 78, 79, 80, 81, 82, 83, 84, 85,
-	86, 88, 87, 89, 90, 91, 92, 106, 94, 105,
-	236, 95, 97, 98, 99, 100, 307, 195, 97, 98,
-	99, 100, 99, 100, 141, 140, 104, 103, 306, 305,
-	304, 303, 302, 301, 300, 299, 298, 288, 287, 286,
-	285, 284, 283, 282, 281, 274, 238, 237, 233, 232,
-	231, 230, 229, 228, 227, 226, 225, 224, 147, 95,
-	148, 149, 150, 151, 223, 222, 221, 220, 219, 218,
-	217, 216, 215, 206, 205, 204, 203, 202, 201, 200,
-	145, 144, 143, 142, 139, 138, 137, 136, 135, 134,
+	98, 97, 50, 52, 51, 53, 54, 55, 56, 57,
+	58, 59, 60, 61, 62, 63, 64, 65, 66, 67,
+	68, 69, 70, 71, 72, 73, 74, 75, 76, 77,
+	78, 79, 80, 81, 82, 83, 84, 85, 86, 87,
+	88, 90, 89, 91, 92, 93, 94, 95, 96, 110,
+	98, 109, 244, 99, 101, 102, 103, 104, 317, 203,
+	101, 102, 103, 104, 103, 104, 145, 144, 108, 107,
+	316, 315, 314, 313, 312, 311, 310, 309, 308, 298,
+	297, 296, 295, 294, 293, 292, 291, 284, 248, 247,
+	246, 245, 241, 240, 239, 238, 237, 236, 235, 234,
+	233, 232, 153, 99, 154, 155, 156, 157, 231, 230,
+	229, 228, 227, 226, 225, 224, 223, 214, 213, 212,
+	211, 210, 209, 208, 151, 150, 149, 148, 147, 146,
+	143, 142, 141, 140, 139, 138, 137, 136, 135, 134,
 	133, 132, 131, 130, 129, 128, 127, 126, 125, 124,
 	123, 122, 121, 120, 119, 118, 117, 116, 115, 114,
-	113, 112, 111, 110, 109, 108, 107, 102, 101, 234,
-	297, 296, 295, 294, 293, 292, 291, 290, 289, 280,
-	279, 278, 277, 276, 275, 235, 214, 213, 212, 211,
-	210, 209, 208, 207, 199, 198, 197, 196, 316, 315,
-	314, 313, 312, 311, 310, 309, 308, 240, 254, 253,
-	252, 251, 250, 249, 248, 247, 239, 156, 273, 272,
-	271, 270, 269, 268, 267, 266, 265, 264, 263, 262,
-	261, 260, 259, 258, 257, 256, 255, 246, 245, 244,
-	243, 242, 241, 194, 193, 192, 191, 190, 189, 188,
-	187, 186, 185, 184, 183, 182, 181, 180, 179, 178,
-	177, 176, 175, 174, 173, 172, 171, 170, 169, 168,
-	167, 166, 165, 164, 163, 162, 161, 160, 159, 158,
-	157, 155, 154, 153, 152, 146, 96, 47, 46, 45,
+	113, 112, 111, 106, 105, 242, 307, 306, 305, 304,
+	303, 302, 301, 300, 299, 290, 289, 288, 287, 286,
+	285, 243, 222, 221, 220, 219, 218, 217, 216, 215,
+	207, 206, 205, 204, 326, 325, 324, 323, 322, 321,
+	320, 319, 318, 250, 264, 263, 262, 261, 260, 259,
+	258, 257, 249, 162, 283, 282, 281, 280, 279, 278,
+	277, 276, 275, 274, 273, 272, 271, 270, 269, 268,
+	267, 266, 265, 256, 255, 254, 253, 252, 251, 202,
+	201, 200, 199, 198, 197, 196, 195, 194, 193, 192,
+	191, 190, 189, 188, 187, 186, 185, 184, 183, 182,
+	181, 180, 179, 178, 177, 176, 175, 174, 173, 172,
+	171, 170, 169, 168, 167, 166, 165, 164, 163, 161,
+	160, 159, 158, 152, 100, 49, 48, 47, 46, 45,
 	44, 43, 41, 42, 40, 39, 38, 37, 36, 35,
 	34, 33, 32, 31, 30, 29, 28, 27, 26, 25,
 	24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
@@ -202,46 +207,48 @@ var assemblerAct = [...]int16{
 }
 
 var assemblerPact = [...]int16{
-	-1000, -9, 272, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	-1000, -9, 280, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
-	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, 2, 147,
-	146, 56, 38, 145, 144, 143, 142, 141, 140, 139,
-	138, 137, 136, 135, 134, 133, 132, 131, 130, 129,
-	128, 127, 126, 125, 124, 123, 122, 121, 120, 119,
-	118, 117, 116, 115, 114, 113, 54, 112, 111, 110,
-	-1000, 109, -1000, 270, -1000, 39, -1000, 39, 39, 39,
-	39, 268, 267, 266, -1000, 265, 200, 264, 263, 262,
-	261, 260, 259, 258, 257, 256, 255, 254, 253, 252,
-	251, 250, 249, 248, 247, 246, 245, 244, 243, 242,
-	241, 240, 239, 238, 237, 236, 235, 234, 233, 232,
-	231, -1000, 230, 229, 228, 227, -1000, -4, 4, 4,
-	-1000, -1000, 178, 177, 176, 175, 108, 107, 106, 105,
-	104, 103, 102, 174, 173, 172, 171, 170, 169, 168,
-	167, 101, 100, 99, 98, 97, 96, 95, 94, 93,
-	86, 85, 84, 83, 82, 81, 80, 79, 78, 77,
-	149, 166, 40, 76, 75, -1000, -1000, -1000, -1000, 199,
-	189, 226, 225, 224, 223, 222, 221, 198, 197, 196,
-	195, 194, 193, 192, 191, 220, 219, 218, 217, 216,
-	215, 214, 213, 212, 211, 210, 209, 208, 207, 206,
-	205, 204, 203, 202, -1000, -1000, -1000, -1000, -1000, 74,
-	-1000, 165, 164, 163, 162, 161, 160, 73, 72, 71,
-	70, 69, 68, 67, 66, 159, 158, 157, 156, 155,
-	154, 153, 152, 151, 65, 64, 63, 62, 61, 60,
-	59, 58, 57, 45, 188, -1000, -1000, -1000, -1000, -1000,
-	-1000, 187, 186, 185, 184, 183, 182, 181, 180, -1000,
+	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	2, 153, 152, 58, 40, 151, 150, 149, 148, 147,
+	146, 145, 144, 143, 142, 141, 140, 139, 138, 137,
+	136, 135, 134, 133, 132, 131, 130, 129, 128, 127,
+	126, 125, 124, 123, 122, 121, 120, 119, 56, 118,
+	117, 116, 115, -1000, 114, 113, -1000, 278, -1000, 41,
+	-1000, 41, 41, 41, 41, 276, 275, 274, -1000, 273,
+	206, 272, 271, 270, 269, 268, 267, 266, 265, 264,
+	263, 262, 261, 260, 259, 258, 257, 256, 255, 254,
+	253, 252, 251, 250, 249, 248, 247, 246, 245, 244,
+	243, 242, 241, 240, 239, -1000, 238, 237, 236, 235,
+	234, 233, -1000, -4, 4, 4, -1000, -1000, 184, 183,
+	182, 181, 112, 111, 110, 109, 108, 107, 106, 180,
+	179, 178, 177, 176, 175, 174, 173, 105, 104, 103,
+	102, 101, 100, 99, 98, 97, 90, 89, 88, 87,
+	86, 85, 84, 83, 82, 81, 155, 172, 42, 80,
+	79, 78, 77, -1000, -1000, -1000, -1000, 205, 195, 232,
+	231, 230, 229, 228, 227, 204, 203, 202, 201, 200,
+	199, 198, 197, 226, 225, 224, 223, 222, 221, 220,
+	219, 218, 217, 216, 215, 214, 213, 212, 211, 210,
+	209, 208, -1000, -1000, -1000, -1000, -1000, -1000, -1000, 76,
+	-1000, 171, 170, 169, 168, 167, 166, 75, 74, 73,
+	72, 71, 70, 69, 68, 165, 164, 163, 162, 161,
+	160, 159, 158, 157, 67, 66, 65, 64, 63, 62,
+	61, 60, 59, 47, 194, -1000, -1000, -1000, -1000, -1000,
+	-1000, 193, 192, 191, 190, 189, 188, 187, 186, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 	-1000, -1000, -1000, -1000, -1000, -1000, -1000,
 }
 
 var assemblerPgo = [...]int16{
-	0, 323, 322, 321, 320, 319, 318, 317, 316, 315,
+	0, 333, 332, 331, 330, 329, 328, 327, 326, 325,
+	324, 323, 322, 321, 320, 319, 318, 317, 316, 315,
 	314, 313, 312, 311, 310, 309, 308, 307, 306, 305,
 	304, 303, 302, 301, 300, 299, 298, 297, 296, 295,
 	294, 293, 292, 291, 290, 289, 288, 287, 286, 285,
-	284, 283, 282, 281, 280, 279, 278, 277, 2,
+	2,
 }
 
 var assemblerR1 = [...]int8{
@@ -250,12 +257,12 @@ var assemblerR1 = [...]int8{
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	3, 4, 5, 5, 6, 6, 7, 8, 9, 10,
-	11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-	21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-	31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-	40, 42, 41, 43, 44, 45, 46, 47, 48, 48,
-	48, 48, 48, 48,
+	2, 2, 3, 4, 5, 5, 6, 6, 7, 8,
+	9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+	19, 20, 21, 22, 23, 24, 25, 26, 27, 28,
+	29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+	39, 40, 40, 42, 41, 43, 44, 45, 46, 47,
+	48, 49, 50, 50, 50, 50, 50, 50,
 }
 
 var assemblerR2 = [...]int8{
@@ -264,12 +271,12 @@ var assemblerR2 = [...]int8{
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	4, 4, 4, 2, 7, 5, 6, 6, 6, 6,
-	6, 6, 7, 7, 7, 7, 7, 7, 7, 7,
+	1, 1, 4, 4, 4, 2, 7, 5, 6, 6,
+	6, 6, 6, 6, 7, 7, 7, 7, 7, 7,
+	7, 7, 6, 6, 6, 6, 6, 6, 6, 6,
 	6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 6, 6, 6, 6, 4,
-	2, 4, 4, 4, 1, 4, 1, 2, 1, 3,
-	3, 3, 3, 3,
+	6, 4, 2, 4, 4, 4, 4, 1, 4, 4,
+	1, 2, 1, 3, 3, 3, 3, 3,
 }
 
 var assemblerChk = [...]int16{
@@ -277,26 +284,27 @@ var assemblerChk = [...]int16{
 	-10, -11, -12, -13, -14, -15, -16, -17, -18, -19,
 	-20, -21, -22, -23, -24, -25, -26, -27, -28, -29,
 	-30, -31, -32, -33, -34, -35, -36, -37, -38, -39,
-	-40, -42, -41, -43, -44, -45, -46, -47, -48, 13,
-	12, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-	23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-	33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
-	43, 44, 45, 46, 47, 48, 49, 51, 50, 52,
-	53, 54, 55, 10, 9, 60, 4, 56, 57, 58,
-	59, 11, 11, 11, 10, 11, 9, 11, 11, 11,
+	-40, -42, -41, -43, -44, -45, -46, -47, -48, -49,
+	-50, 13, 12, 14, 15, 16, 17, 18, 19, 20,
+	21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+	31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+	41, 42, 43, 44, 45, 46, 47, 48, 49, 51,
+	50, 52, 53, 54, 55, 56, 57, 10, 9, 62,
+	4, 58, 59, 60, 61, 11, 11, 11, 10, 11,
+	9, 11, 11, 11, 11, 11, 11, 11, 11, 11,
 	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
 	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 10, 11, 11, 11, 11, 5, -48, -48, -48,
-	-48, -48, 6, 6, 6, 6, 7, 6, 6, 6,
+	11, 11, 11, 11, 11, 10, 11, 11, 11, 11,
+	11, 11, 5, -50, -50, -50, -50, -50, 6, 6,
+	6, 6, 7, 6, 6, 6, 6, 6, 6, 6,
 	6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 	6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 	6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-	6, 6, 6, 6, 6, 61, 9, 9, 9, 9,
-	11, 11, 11, 11, 11, 11, 11, 9, 9, 9,
-	9, 9, 9, 9, 9, 11, 11, 11, 11, 11,
+	6, 6, 6, 63, 9, 9, 9, 9, 11, 11,
+	11, 11, 11, 11, 11, 9, 9, 9, 9, 9,
+	9, 9, 9, 11, 11, 11, 11, 11, 11, 11,
 	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 10, 9, 10, 11, 11, 7,
+	11, 11, 10, 9, 10, 11, 11, 11, 11, 7,
 	8, 6, 6, 6, 6, 6, 6, 7, 7, 7,
 	7, 7, 7, 7, 7, 6, 6, 6, 6, 6,
 	6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
@@ -312,34 +320,35 @@ var assemblerDef = [...]int8{
 	11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 	21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
 	31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-	41, 42, 43, 44, 45, 46, 47, 48, 49, 0,
+	41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+	51, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 97, 0, 0, 100, 0, 102, 0,
+	2, 0, 0, 0, 0, 0, 0, 0, 55, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 92, 0, 0, 0, 0,
+	0, 0, 101, 0, 103, 104, 105, 106, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	94, 0, 96, 0, 98, 0, 2, 0, 0, 0,
-	0, 0, 0, 0, 53, 0, 0, 0, 0, 0,
+	0, 0, 0, 107, 52, 53, 54, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 90, 0, 0, 0, 0, 97, 0, 99, 100,
-	101, 102, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 91, 93, 94, 95, 96, 98, 99, 0,
+	57, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 103, 50, 51, 52, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 89, 91, 92, 93, 95, 0,
-	55, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 56, 57, 58, 59, 60,
-	61, 0, 0, 0, 0, 0, 0, 0, 0, 70,
-	71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
-	81, 82, 83, 84, 85, 86, 87, 88, 54, 62,
-	63, 64, 65, 66, 67, 68, 69,
+	0, 0, 0, 0, 0, 58, 59, 60, 61, 62,
+	63, 0, 0, 0, 0, 0, 0, 0, 0, 72,
+	73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+	83, 84, 85, 86, 87, 88, 89, 90, 56, 64,
+	65, 66, 67, 68, 69, 70, 71,
 }
 
 var assemblerTok1 = [...]int8{
@@ -347,7 +356,7 @@ var assemblerTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	60, 61, 58, 56, 3, 57, 3, 59,
+	62, 63, 60, 58, 3, 59, 3, 61,
 }
 
 var assemblerTok2 = [...]int8{
@@ -356,7 +365,7 @@ var assemblerTok2 = [...]int8{
 	22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
 	42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
-	52, 53, 54, 55,
+	52, 53, 54, 55, 56, 57,
 }
 
 var assemblerTok3 = [...]int8{
@@ -1003,14 +1012,26 @@ assemblerdefault:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
 //line pkg/rv32iasm/assembler.y:120
 		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
+		}
+	case 50:
+		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
+//line pkg/rv32iasm/assembler.y:121
+		{
+			assemblerVAL.stmt = assemblerDollar[1].stmt
+		}
+	case 51:
+		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
+//line pkg/rv32iasm/assembler.y:122
+		{
 			log.Debugf("* stmt expr %v", assemblerVAL.stmt)
 			assemblerVAL.stmt = &statement{
 				opcode: "expr",
 			}
 		}
-	case 50:
+	case 52:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:127
+//line pkg/rv32iasm/assembler.y:129
 		{
 			log.Debugf("* lui_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1021,9 +1042,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 51:
+	case 53:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:138
+//line pkg/rv32iasm/assembler.y:140
 		{
 			log.Debugf("* auipc_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1034,9 +1055,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 52:
+	case 54:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:149
+//line pkg/rv32iasm/assembler.y:151
 		{
 			log.Debugf("* jal_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1047,9 +1068,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 53:
+	case 55:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:159
+//line pkg/rv32iasm/assembler.y:161
 		{
 			log.Debugf("* jal_stmt (label): %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1058,9 +1079,9 @@ assemblerdefault:
 				str1:   assemblerDollar[2].tok.lit,
 			}
 		}
-	case 54:
+	case 56:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:168
+//line pkg/rv32iasm/assembler.y:170
 		{
 			log.Debugf("* jalr_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1072,9 +1093,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 55:
+	case 57:
 		assemblerDollar = assemblerS[assemblerpt-5 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:179
+//line pkg/rv32iasm/assembler.y:181
 		{
 			log.Debugf("* jalr_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[2].tok.lit)
@@ -1086,9 +1107,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[4].tok.lit],
 			}
 		}
-	case 56:
+	case 58:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:191
+//line pkg/rv32iasm/assembler.y:193
 		{
 			log.Debugf("* beq_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1100,9 +1121,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 57:
+	case 59:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:203
+//line pkg/rv32iasm/assembler.y:205
 		{
 			log.Debugf("* bne_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1114,9 +1135,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 58:
+	case 60:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:215
+//line pkg/rv32iasm/assembler.y:217
 		{
 			log.Debugf("* blt_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1128,9 +1149,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 59:
+	case 61:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:227
+//line pkg/rv32iasm/assembler.y:229
 		{
 			log.Debugf("* bge_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1142,9 +1163,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 60:
+	case 62:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:239
+//line pkg/rv32iasm/assembler.y:241
 		{
 			log.Debugf("* bltu_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1156,9 +1177,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 61:
+	case 63:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:251
+//line pkg/rv32iasm/assembler.y:253
 		{
 			log.Debugf("* bgeu_stmt")
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1170,9 +1191,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 62:
+	case 64:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:263
+//line pkg/rv32iasm/assembler.y:265
 		{
 			log.Debugf("* lb_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1184,9 +1205,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 63:
+	case 65:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:275
+//line pkg/rv32iasm/assembler.y:277
 		{
 			log.Debugf("* lh_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1198,9 +1219,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 64:
+	case 66:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:287
+//line pkg/rv32iasm/assembler.y:289
 		{
 			log.Debugf("* lw_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1212,9 +1233,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 65:
+	case 67:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:299
+//line pkg/rv32iasm/assembler.y:301
 		{
 			log.Debugf("* lbu_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1226,9 +1247,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 66:
+	case 68:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:311
+//line pkg/rv32iasm/assembler.y:313
 		{
 			log.Debugf("* lhu_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1240,9 +1261,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 67:
+	case 69:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:323
+//line pkg/rv32iasm/assembler.y:325
 		{
 			log.Debugf("* sb_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1254,9 +1275,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 68:
+	case 70:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:335
+//line pkg/rv32iasm/assembler.y:337
 		{
 			log.Debugf("* sh_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1268,9 +1289,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 69:
+	case 71:
 		assemblerDollar = assemblerS[assemblerpt-7 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:347
+//line pkg/rv32iasm/assembler.y:349
 		{
 			log.Debugf("* sw_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1282,9 +1303,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 70:
+	case 72:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:359
+//line pkg/rv32iasm/assembler.y:361
 		{
 			log.Debugf("* addi_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1296,9 +1317,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 71:
+	case 73:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:371
+//line pkg/rv32iasm/assembler.y:373
 		{
 			log.Debugf("* slti_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1310,9 +1331,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 72:
+	case 74:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:383
+//line pkg/rv32iasm/assembler.y:385
 		{
 			log.Debugf("* sltiu_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1324,9 +1345,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 73:
+	case 75:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:395
+//line pkg/rv32iasm/assembler.y:397
 		{
 			log.Debugf("* xori_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1338,9 +1359,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 74:
+	case 76:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:407
+//line pkg/rv32iasm/assembler.y:409
 		{
 			log.Debugf("* ori_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1352,9 +1373,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 75:
+	case 77:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:419
+//line pkg/rv32iasm/assembler.y:421
 		{
 			log.Debugf("* andi_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1366,9 +1387,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 76:
+	case 78:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:431
+//line pkg/rv32iasm/assembler.y:433
 		{
 			log.Debugf("* slli_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1380,9 +1401,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 77:
+	case 79:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:443
+//line pkg/rv32iasm/assembler.y:445
 		{
 			log.Debugf("* srli_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1394,9 +1415,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 78:
+	case 80:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:455
+//line pkg/rv32iasm/assembler.y:457
 		{
 			log.Debugf("* srai_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[6].tok.lit)
@@ -1408,9 +1429,9 @@ assemblerdefault:
 				op3:    val,
 			}
 		}
-	case 79:
+	case 81:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:467
+//line pkg/rv32iasm/assembler.y:469
 		{
 			log.Debugf("* add_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1420,9 +1441,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 80:
+	case 82:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:477
+//line pkg/rv32iasm/assembler.y:479
 		{
 			log.Debugf("* sub_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1432,9 +1453,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 81:
+	case 83:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:487
+//line pkg/rv32iasm/assembler.y:489
 		{
 			log.Debugf("* sll_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1444,9 +1465,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 82:
+	case 84:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:497
+//line pkg/rv32iasm/assembler.y:499
 		{
 			log.Debugf("* slt_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1456,9 +1477,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 83:
+	case 85:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:507
+//line pkg/rv32iasm/assembler.y:509
 		{
 			log.Debugf("* sltu_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1468,9 +1489,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 84:
+	case 86:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:517
+//line pkg/rv32iasm/assembler.y:519
 		{
 			log.Debugf("* xor_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1480,9 +1501,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 85:
+	case 87:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:527
+//line pkg/rv32iasm/assembler.y:529
 		{
 			log.Debugf("* srl_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1492,9 +1513,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 86:
+	case 88:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:537
+//line pkg/rv32iasm/assembler.y:539
 		{
 			log.Debugf("* sra_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1504,9 +1525,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 87:
+	case 89:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:547
+//line pkg/rv32iasm/assembler.y:549
 		{
 			log.Debugf("* or_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1516,9 +1537,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 88:
+	case 90:
 		assemblerDollar = assemblerS[assemblerpt-6 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:557
+//line pkg/rv32iasm/assembler.y:559
 		{
 			log.Debugf("* and_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1528,9 +1549,9 @@ assemblerdefault:
 				op3:    rv32i.Regs[assemblerDollar[6].tok.lit],
 			}
 		}
-	case 89:
+	case 91:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:568
+//line pkg/rv32iasm/assembler.y:570
 		{
 			log.Debugf("* call_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1539,9 +1560,9 @@ assemblerdefault:
 				str1:   assemblerDollar[4].tok.lit,
 			}
 		}
-	case 90:
+	case 92:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:576
+//line pkg/rv32iasm/assembler.y:578
 		{
 			assemblerVAL.stmt = &statement{
 				opcode: assemblerDollar[1].tok.lit,
@@ -1549,9 +1570,9 @@ assemblerdefault:
 				str1:   assemblerDollar[2].tok.lit,
 			}
 		}
-	case 91:
+	case 93:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:584
+//line pkg/rv32iasm/assembler.y:586
 		{
 			log.Debugf("* li_stmt: %+v", assemblerDollar[1].tok)
 			val, err := strconv.Atoi(assemblerDollar[4].tok.lit)
@@ -1562,9 +1583,9 @@ assemblerdefault:
 				op2:    val,
 			}
 		}
-	case 92:
+	case 94:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:595
+//line pkg/rv32iasm/assembler.y:597
 		{
 			log.Debugf("* la_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1573,9 +1594,9 @@ assemblerdefault:
 				str1:   assemblerDollar[4].tok.lit,
 			}
 		}
-	case 93:
+	case 95:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:604
+//line pkg/rv32iasm/assembler.y:606
 		{
 			log.Debugf("* mv_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1584,9 +1605,21 @@ assemblerdefault:
 				op2:    rv32i.Regs[assemblerDollar[4].tok.lit],
 			}
 		}
-	case 94:
+	case 96:
+		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
+//line pkg/rv32iasm/assembler.y:615
+		{
+			log.Debugf("* neg_stmt: %+v", assemblerDollar[1].tok)
+			assemblerVAL.stmt = &statement{
+				opcode: "sub",
+				op1:    rv32i.Regs[assemblerDollar[2].tok.lit],
+				op2:    0,
+				op3:    rv32i.Regs[assemblerDollar[4].tok.lit],
+			}
+		}
+	case 97:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:613
+//line pkg/rv32iasm/assembler.y:625
 		{
 			log.Debugf("* nop_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1596,9 +1629,27 @@ assemblerdefault:
 				op3:    0,
 			}
 		}
-	case 95:
+	case 98:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:623
+//line pkg/rv32iasm/assembler.y:635
+		{
+			log.Debugf("* not_stmt: %+v", assemblerDollar[1].tok)
+			// $$ = &statement{
+			//     opcode: "xori",
+			//     op1: rv32i.Regs[$2.lit],
+			//     op2: rv32i.Regs[$4.lit],
+			//     op3: -1,
+			// }
+			assemblerVAL.stmt = &statement{
+				opcode: "xori",
+				op1:    rv32i.Regs[assemblerDollar[2].tok.lit],
+				op2:    rv32i.Regs[assemblerDollar[4].tok.lit],
+				op3:    -1,
+			}
+		}
+	case 99:
+		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
+//line pkg/rv32iasm/assembler.y:651
 		{
 			log.Debugf("* seqz_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1608,9 +1659,9 @@ assemblerdefault:
 				op3:    1,
 			}
 		}
-	case 96:
+	case 100:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:633
+//line pkg/rv32iasm/assembler.y:661
 		{
 			log.Debugf("* ret_stmt")
 			assemblerVAL.stmt = &statement{
@@ -1620,9 +1671,9 @@ assemblerdefault:
 				op3:    1,
 			}
 		}
-	case 97:
+	case 101:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:643
+//line pkg/rv32iasm/assembler.y:671
 		{
 			log.Debugf("* label_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -1630,39 +1681,39 @@ assemblerdefault:
 				str1:   assemblerDollar[1].tok.lit,
 			}
 		}
-	case 98:
+	case 102:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:651
+//line pkg/rv32iasm/assembler.y:679
 		{
 			assemblerVAL.expr = &numberExpression{Lit: assemblerDollar[1].tok.lit}
 		}
-	case 99:
+	case 103:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:654
+//line pkg/rv32iasm/assembler.y:682
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('+'), RHS: assemblerDollar[3].expr}
 		}
-	case 100:
+	case 104:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:657
+//line pkg/rv32iasm/assembler.y:685
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('-'), RHS: assemblerDollar[3].expr}
 		}
-	case 101:
+	case 105:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:660
+//line pkg/rv32iasm/assembler.y:688
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('*'), RHS: assemblerDollar[3].expr}
 		}
-	case 102:
+	case 106:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:663
+//line pkg/rv32iasm/assembler.y:691
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('/'), RHS: assemblerDollar[3].expr}
 		}
-	case 103:
+	case 107:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:666
+//line pkg/rv32iasm/assembler.y:694
 		{
 			assemblerVAL.expr = &parenExpression{SubExpr: assemblerDollar[2].expr}
 		}
