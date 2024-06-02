@@ -1,7 +1,11 @@
 package main
 
 import (
+	"flag"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/sokoide/rv32i-go/pkg/rv32i"
@@ -13,15 +17,27 @@ func chkerr(err error) {
 	}
 }
 
-func main() {
+type options struct {
+	logLevel   string
+	demo       bool
+	sourcePath string
+	end        string
+}
+
+var opts options = options{
+	demo: false,
+}
+
+func parseArgs() {
+	flag.BoolVar(&opts.demo, "demo", false, "Run demo")
+	flag.StringVar(&opts.logLevel, "logLevel", opts.logLevel, "Log level (trace, debug, info, warn, error, fatal, panic)")
+	flag.StringVar(&opts.sourcePath, "sourcePath", opts.sourcePath, "Source path")
+	flag.StringVar(&opts.end, "end", opts.end, "End address")
+	flag.Parse()
+}
+
+func runDemo() {
 	var err error
-
-	log.SetOutput(os.Stdout)
-	// log.SetLevel(log.TraceLevel)
-	log.SetLevel(log.InfoLevel)
-
-	log.Info("* Started")
-	log.Info("* Running a small program")
 
 	emu := rv32i.NewEmulator()
 	emu.Reset()
@@ -60,6 +76,60 @@ func main() {
 	emu.StepUntil(0x18)
 	emu.Dump()
 	emu.StepUntil(0x1c)
+}
+
+func run(sourcePath string, end string) {
+	var err error
+
+	emu := rv32i.NewEmulator()
+	emu.Reset()
+
+	err = emu.Load(sourcePath)
+	chkerr(err)
+
+	if len(end) > 0 {
+		var uintEnd uint32
+		var uintEnd64 uint64
+		if strings.HasPrefix(end, "0x") {
+			uintEnd64, err = strconv.ParseUint(end[2:], 16, 32)
+			uintEnd = uint32(uintEnd64)
+		} else {
+			uintEnd64, err = strconv.ParseUint(end, 10, 32)
+			uintEnd = uint32(uintEnd64)
+		}
+
+		chkerr(err)
+
+		startTime := time.Now()
+		err = emu.StepUntil(uintEnd)
+		endTime := time.Now()
+		log.Infof("elapsed time: %v", endTime.Sub(startTime))
+	} else {
+		panic("please specify the end address")
+	}
+}
+
+func main() {
+	var err error
+
+	parseArgs()
+
+	log.SetOutput(os.Stdout)
+	ll := log.InfoLevel
+	if len(opts.logLevel) > 0 {
+		ll, err = log.ParseLevel(opts.logLevel)
+		chkerr(err)
+	}
+	log.SetLevel(ll)
+
+	log.Info("* Started")
+	log.Info("* Running a small program")
+
+	if opts.demo {
+		runDemo()
+	} else {
+		run(opts.sourcePath, opts.end)
+	}
 
 	log.Info("* Completed")
 }

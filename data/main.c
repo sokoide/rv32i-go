@@ -12,16 +12,26 @@ void riscv32_boot() {
     main();
 }
 
+int fib(int i) {
+    if (i <= 1)
+        return i;
+    return fib(i - 1) + fib(i - 2);
+}
+
 int main() {
-    int a, b;
-    char c, d;
-    a = 1000000000;
-    b = 1;
-    c = is_even(a);
-    d = is_even(b);
-    _out(a);
-    _out(b);
-    _out(c);
-    _out(d);
+    fib(30);
+
     return 0;
+
+    // int a, b;
+    // char c, d;
+    // a = 1000000000;
+    // b = 1;
+    // c = is_even(a);
+    // d = is_even(b);
+    // _out(a);
+    // _out(b);
+    // _out(c);
+    // _out(d);
+    // return 0;
 }

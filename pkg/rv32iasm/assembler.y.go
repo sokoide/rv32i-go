@@ -186,7 +186,7 @@ const assemblerEofCode = 1
 const assemblerErrCode = 2
 const assemblerInitialStackSize = 16
 
-//line pkg/rv32iasm/assembler.y:907
+//line pkg/rv32iasm/assembler.y:901
 
 //line yacctab:1
 var assemblerExca = [...]int8{
@@ -1985,12 +1985,6 @@ assemblerdefault:
 //line pkg/rv32iasm/assembler.y:814
 		{
 			log.Debugf("* not_stmt: %+v", assemblerDollar[1].tok)
-			// $$ = &statement{
-			//     opcode: "xori",
-			//     op1: rv32i.Regs[$2.lit],
-			//     op2: rv32i.Regs[$4.lit],
-			//     op3: -1,
-			// }
 			assemblerVAL.stmt = &statement{
 				opcode: "xori",
 				op1:    rv32i.Regs[assemblerDollar[2].tok.lit],
@@ -2000,7 +1994,7 @@ assemblerdefault:
 		}
 	case 128:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:830
+//line pkg/rv32iasm/assembler.y:824
 		{
 			log.Debugf("* seqz_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -2012,7 +2006,7 @@ assemblerdefault:
 		}
 	case 129:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:840
+//line pkg/rv32iasm/assembler.y:834
 		{
 			log.Debugf("* snez_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -2024,7 +2018,7 @@ assemblerdefault:
 		}
 	case 130:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:850
+//line pkg/rv32iasm/assembler.y:844
 		{
 			log.Debugf("* sltz_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -2036,7 +2030,7 @@ assemblerdefault:
 		}
 	case 131:
 		assemblerDollar = assemblerS[assemblerpt-4 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:860
+//line pkg/rv32iasm/assembler.y:854
 		{
 			log.Debugf("* sgtz_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -2048,7 +2042,7 @@ assemblerdefault:
 		}
 	case 132:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:870
+//line pkg/rv32iasm/assembler.y:864
 		{
 			log.Debugf("* ret_stmt")
 			assemblerVAL.stmt = &statement{
@@ -2060,7 +2054,7 @@ assemblerdefault:
 		}
 	case 133:
 		assemblerDollar = assemblerS[assemblerpt-2 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:880
+//line pkg/rv32iasm/assembler.y:874
 		{
 			log.Debugf("* label_stmt: %+v", assemblerDollar[1].tok)
 			assemblerVAL.stmt = &statement{
@@ -2070,37 +2064,37 @@ assemblerdefault:
 		}
 	case 134:
 		assemblerDollar = assemblerS[assemblerpt-1 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:888
+//line pkg/rv32iasm/assembler.y:882
 		{
 			assemblerVAL.expr = &numberExpression{Lit: assemblerDollar[1].tok.lit}
 		}
 	case 135:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:891
+//line pkg/rv32iasm/assembler.y:885
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('+'), RHS: assemblerDollar[3].expr}
 		}
 	case 136:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:894
+//line pkg/rv32iasm/assembler.y:888
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('-'), RHS: assemblerDollar[3].expr}
 		}
 	case 137:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:897
+//line pkg/rv32iasm/assembler.y:891
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('*'), RHS: assemblerDollar[3].expr}
 		}
 	case 138:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:900
+//line pkg/rv32iasm/assembler.y:894
 		{
 			assemblerVAL.expr = &binOpExpression{LHS: assemblerDollar[1].expr, Operator: int('/'), RHS: assemblerDollar[3].expr}
 		}
 	case 139:
 		assemblerDollar = assemblerS[assemblerpt-3 : assemblerpt+1]
-//line pkg/rv32iasm/assembler.y:903
+//line pkg/rv32iasm/assembler.y:897
 		{
 			assemblerVAL.expr = &parenExpression{SubExpr: assemblerDollar[2].expr}
 		}
