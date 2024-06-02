@@ -10,7 +10,10 @@ YACC_GOS := $(patsubst %.y,%.y.go,$(YACC_DEFS))
 build: demo asm
 
 demo: $(DEMOSRCS)
-	go build ./cmd/demo
+	go build -ldflags "-s -w" ./cmd/demo
+
+demo-debug: $(DEMOSRCS)
+	go build -tags=debug  ./cmd/demo
 
 asm: $(ASMSRCS) yacc
 	go build ./cmd/asm

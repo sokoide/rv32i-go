@@ -103,7 +103,7 @@ func run(sourcePath string, end string) {
 		startTime := time.Now()
 		err = emu.StepUntil(uintEnd)
 		endTime := time.Now()
-		log.Infof("elapsed time: %v", endTime.Sub(startTime))
+		log.Infof("elapsed time: %v\n", endTime.Sub(startTime))
 	} else {
 		panic("please specify the end address")
 	}

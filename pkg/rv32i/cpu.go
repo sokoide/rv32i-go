@@ -157,11 +157,11 @@ func (c *Cpu) Step() error {
 	if err != nil {
 		return err
 	}
-	log.Tracef("PC: 0x%08x, u32instr: %08x", c.PC, u32instr)
+	trace("PC: 0x%08x, u32instr: %08x", c.PC, u32instr)
 
 	// decode
 	instr := NewInstruction(u32instr)
-	log.Tracef("instr: %+v", instr)
+	trace("instr: %+v", instr)
 
 	// execute
 	incrementPC := c.Execute(instr)
@@ -198,12 +198,12 @@ func (c *Cpu) Execute(i *Instruction) bool {
 
 	switch op {
 	case OpLui:
-		log.Tracef("lui: X[%d] <- %x", i.Rd, i.Imm)
+		trace("lui: X[%d] <- %x", i.Rd, i.Imm)
 		if i.Rd > 0 {
 			c.X[i.Rd] = i.Imm
 		}
 	case OpAuipc:
-		log.Tracef("auipc: X[%d] <- PC:%x + imm:%x", i.Rd, c.PC, i.Imm)
+		trace("auipc: X[%d] <- PC:%x + imm:%x", i.Rd, c.PC, i.Imm)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.PC + i.Imm
 		}
@@ -213,7 +213,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		if i.Rd > 0 {
 			c.X[i.Rd] = t
 		}
-		log.Tracef("jal: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
+		trace("jal: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
 		incrementPC = false
 	case OpJalr:
 		t := c.PC + 4
@@ -221,16 +221,16 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		if i.Rd > 0 {
 			c.X[i.Rd] = t
 		}
-		log.Tracef("jalr: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
+		trace("jalr: PC=%x, X[%d]=%x", c.PC, i.Rd, t)
 		incrementPC = false
 	case OpBeq:
-		log.Tracef("beq: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("beq: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] == c.X[i.Rs2] {
 			c.PC += i.Imm
 			incrementPC = false
 		}
 	case OpBne:
-		log.Tracef("bne: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("bne: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] != c.X[i.Rs2] {
 			c.PC += i.Imm
 			incrementPC = false
@@ -239,7 +239,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		// signed comparison
 		a := int32(c.X[i.Rs1])
 		b := int32(c.X[i.Rs2])
-		log.Tracef("blt: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("blt: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a < b {
 			c.PC += i.Imm
 			incrementPC = false
@@ -248,21 +248,21 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		// signed comparison
 		a := int32(c.X[i.Rs1])
 		b := int32(c.X[i.Rs2])
-		log.Tracef("bge: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("bge: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if a >= b {
 			c.PC += i.Imm
 			incrementPC = false
 		}
 	case OpBltu:
 		// unsigned comparison
-		log.Tracef("bltu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("bltu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] < c.X[i.Rs2] {
 			c.PC += i.Imm
 			incrementPC = false
 		}
 	case OpBgeu:
 		// unsigned comparison
-		log.Tracef("bgeu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
+		trace("bgeu: Rs1:%x, Rs2:%x", i.Rs1, i.Rs2)
 		if c.X[i.Rs1] >= c.X[i.Rs2] {
 			c.PC += i.Imm
 			incrementPC = false
@@ -270,7 +270,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 	case OpLb:
 		// sign extension
 		addr := c.X[i.Rs1] + i.Imm
-		log.Tracef("lb: read %x -> X[%d]", addr, i.Rd)
+		trace("lb: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU8(addr))
 		if i.Rd > 0 {
 			c.X[i.Rd] = SignExtension(data, 7)
@@ -278,7 +278,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 	case OpLh:
 		// sign extension
 		addr := c.X[i.Rs1] + i.Imm
-		log.Tracef("lh: read %x -> X[%d]", addr, i.Rd)
+		trace("lh: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU16(addr))
 		if i.Rd > 0 {
 			c.X[i.Rd] = SignExtension(data, 15)
@@ -286,7 +286,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 	case OpLw:
 		// no extension
 		addr := c.X[i.Rs1] + i.Imm
-		log.Tracef("lw: read %x -> X[%d]", addr, i.Rd)
+		trace("lw: read %x -> X[%d]", addr, i.Rd)
 		data := c.Emu.ReadU32(addr)
 		if i.Rd > 0 {
 			c.X[i.Rd] = data
@@ -294,7 +294,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 	case OpLbu:
 		// zero extension
 		addr := c.X[i.Rs1] + i.Imm
-		log.Tracef("lbu: read %x -> X[%d]", addr, i.Rd)
+		trace("lbu: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU8(addr))
 		if i.Rd > 0 {
 			c.X[i.Rd] = data
@@ -302,7 +302,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 	case OpLhu:
 		// zero extension
 		addr := c.X[i.Rs1] + i.Imm
-		log.Tracef("lhu: read %x -> X[%d]", addr, i.Rd)
+		trace("lhu: read %x -> X[%d]", addr, i.Rd)
 		data := uint32(c.Emu.ReadU16(addr))
 		if i.Rd > 0 {
 			c.X[i.Rd] = data
@@ -311,28 +311,28 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := uint8(c.X[i.Rs2] & 0xFF)
-		log.Tracef("sb: write %x at %x", data, addr)
+		trace("sb: write %x at %x", data, addr)
 		c.Emu.WriteU8(addr, data)
 	case OpSh:
 		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := uint16(c.X[i.Rs2] & 0xFFFF)
-		log.Tracef("sh: write %x at %x", data, addr)
+		trace("sh: write %x at %x", data, addr)
 		c.Emu.WriteU16(addr, data)
 	case OpSw:
 		// no extension
 		addr := c.X[i.Rs1] + i.Imm
 		data := c.X[i.Rs2]
-		log.Tracef("sw: write %x at %x", data, addr)
+		trace("sw: write %x at %x", data, addr)
 		c.Emu.WriteU32(addr, data)
 	case OpAddi:
-		log.Tracef("addi: rs1:%x + imm:%x -> rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("addi: rs1:%x + imm:%x -> rd:%x", i.Rs1, i.Imm, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] + i.Imm
 		}
 	case OpSlti:
 		// signed comparison
-		log.Tracef("slti: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("slti: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
 		if int32(c.X[i.Rs1]) < int32(i.Imm) {
 			if i.Rd > 0 {
 				c.X[i.Rd] = 1
@@ -342,7 +342,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		}
 	case OpSltiu:
 		// unsigned comparison
-		log.Tracef("sltiu: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("sltiu: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
 		if c.X[i.Rs1] < i.Imm {
 			if i.Rd > 0 {
 				c.X[i.Rd] = 1
@@ -351,58 +351,58 @@ func (c *Cpu) Execute(i *Instruction) bool {
 			c.X[i.Rd] = 0
 		}
 	case OpXori:
-		log.Tracef("xori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("xori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] ^ i.Imm
 		}
 	case OpOri:
-		log.Tracef("ori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("ori: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] | i.Imm
 		}
 	case OpAndi:
-		log.Tracef("andi: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
+		trace("andi: rs1:%x, imm:%x, rd:%x", i.Rs1, i.Imm, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] & i.Imm
 		}
 	case OpSlli:
 		// logical shift
-		log.Tracef("slli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("slli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] << i.Rs2
 		}
 	case OpSrli:
 		// logical shift
-		log.Tracef("srli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("srli: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] >> i.Rs2
 		}
 	case OpSrai:
 		// arithmetic shift
-		log.Tracef("srai: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("srai: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		data := c.X[i.Rs1] >> i.Rs2
 		if i.Rd > 0 {
 			c.X[i.Rd] = SignExtension(data, 31-int(i.Rs2))
 		}
 	case OpAdd:
-		log.Tracef("add: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("add: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] + c.X[i.Rs2]
 		}
 	case OpSub:
-		log.Tracef("sub: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("sub: rs1:%x + rs2:%x -> rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] - c.X[i.Rs2]
 		}
 	case OpSll:
 		// logical shift
-		log.Tracef("sll: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("sll: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] << c.X[i.Rs2]
 		}
 	case OpSlt:
 		// signed comparison
-		log.Tracef("slt: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("slt: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if int32(c.X[i.Rs1]) < int32(c.X[i.Rs2]) {
 			if i.Rd > 0 {
 				c.X[i.Rd] = 1
@@ -412,7 +412,7 @@ func (c *Cpu) Execute(i *Instruction) bool {
 		}
 	case OpSltu:
 		// unsigned comparison
-		log.Tracef("sltu: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("sltu: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if c.X[i.Rs1] < c.X[i.Rs2] {
 			if i.Rd > 0 {
 				c.X[i.Rd] = 1
@@ -421,32 +421,32 @@ func (c *Cpu) Execute(i *Instruction) bool {
 			c.X[i.Rd] = 0
 		}
 	case OpXor:
-		log.Tracef("xor: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("xor: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] ^ c.X[i.Rs2]
 		}
 	case OpSrl:
 		// logical shift
-		log.Tracef("srl: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("srl: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			shamt := 0b11111 & c.X[i.Rs2]
 			c.X[i.Rd] = c.X[i.Rs1] >> shamt
 		}
 	case OpSra:
 		// arithmetic shift
-		log.Tracef("sra: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("sra: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		shamt := 0b11111 & c.X[i.Rs2]
 		data := c.X[i.Rs1] >> shamt
 		if i.Rd > 0 {
 			c.X[i.Rd] = SignExtension(data, 31-int(shamt))
 		}
 	case OpOr:
-		log.Tracef("or: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("or: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] | c.X[i.Rs2]
 		}
 	case OpAnd:
-		log.Tracef("and: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
+		trace("and: rs1:%x, rs2:%x, rd:%x", i.Rs1, i.Rs2, i.Rd)
 		if i.Rd > 0 {
 			c.X[i.Rd] = c.X[i.Rs1] & c.X[i.Rs2]
 		}
